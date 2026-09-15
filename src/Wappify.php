@@ -1,149 +1,71 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify;
 
-use AiluraCode\Wappify\Enums\MessageStatusType;
+use AiluraCode\Wappify\Data\IncomingMessageData;
+use AiluraCode\Wappify\Data\StatusUpdatePayload;
 use AiluraCode\Wappify\Models\Whatsapp;
+use AiluraCode\Wappify\Support\PayloadMapper;
 use Exception;
-use Illuminate\Support\Facades\Config;
-use InvalidArgumentException;
 use Netflie\WhatsAppCloudApi\Response;
 
-class Wappify
+final class Wappify
 {
-    /**
-     * Wappify constructor.
-     *
-     * @param Whatsapp $whatsapp
-     */
     public function __construct(
         private readonly Whatsapp $whatsapp
-    ) {
+    ) {}
+
+    /**
+     * @throws Exception
+     */
+    public static function catch(string $payload): self
+    {
+        return self::createFromModel(PayloadMapper::fromJson($payload));
+    }
+
+    public static function createFromModel(IncomingMessageData $data): self
+    {
+        return new self(PayloadMapper::toModel($data));
     }
 
     /**
-     * @param string $payload
+     * Build the model from an inbound message payload.
      *
-     * @return Wappify
+     * This method only handles inbound messages. Status payloads are handled by
+     * the lifecycle path, which never persists a new row.
      *
      * @throws Exception
      */
-    public static function catch(string $payload): Wappify
+    public static function payloadToModel(string $payload): IncomingMessageData
     {
-        $data = self::payloadToModel($payload);
-
-        return self::createFromModel($data);
+        return PayloadMapper::fromJson($payload);
     }
 
     /**
-     * @param Response $response
+     * Build the lifecycle data from an inbound status payload.
      *
-     * @return Wappify
+     * Returns null when the payload carries no status, so callers can fall back
+     * to the inbound-message path. Status handling never creates a record.
      */
-    public static function raise(Response $response): Wappify
+    public static function payloadToStatus(string $payload): ?StatusUpdatePayload
     {
-        $data = self::responseToModel($response);
-
-        return self::createFromModel($data);
+        return PayloadMapper::statusFromJson($payload);
     }
 
-    /**
-     * Build the model from the response.
-     *
-     * @param Response $response the response from the WhatsApp API
-     *
-     * @return array<object> the data to create the model
-     */
-    public static function responseToModel(Response $response, $account = 'default'): array
+    public static function raise(Response $response): self
     {
-        // @phpstan-ignore-next-line
-        $whatsappRequest = $response->request()->body();
-        $whatsappBody = $response->decodedBody();
-        $message = $whatsappRequest[$whatsappRequest['type']];
-        $message['status'] = MessageStatusType::WAITING->value;
-
-        return [
-            'wamid'     => $whatsappBody['messages'][0]['id'],
-            'profile'   => Config::get("wappify.accounts.$account.profile"),
-            'from'      => $whatsappBody['contacts'][0]['wa_id'],
-            'type'      => $whatsappRequest['type'],
-            'message'   => $message,
-            'timestamp' => time(),
-        ];
+        return self::createFromModel(PayloadMapper::fromResponse($response));
     }
 
-    /**
-     * Create a new instance of the model.
-     *
-     * @param array<object> $data
-     *
-     * @return Wappify
-     */
-    public static function createFromModel(array $data): Wappify
+    public static function responseToModel(Response $response, string $account = 'default'): IncomingMessageData
     {
-        $whatsapp = new Whatsapp([
-            'wamid'     => $data['wamid'],
-            'profile'   => $data['profile'],
-            'from'      => $data['from'],
-            'type'      => $data['type'],
-            'message'   => $data['message'],
-            'timestamp' => $data['timestamp'],
-        ]);
-
-        return new Wappify($whatsapp);
+        return PayloadMapper::fromResponse($response, $account);
     }
 
-    /**
-     * Get a Whatsapp model.
-     *
-     * @return Whatsapp
-     */
     public function get(): Whatsapp
     {
         return $this->whatsapp;
-    }
-
-    /**
-     * Build the model from the payload.
-     *
-     * @return array<object>
-     *
-     * @throws Exception
-     */
-    public static function payloadToModel(string $payload): array
-    {
-        $json = (object) json_decode($payload, false);
-        if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new InvalidArgumentException('Invalid payload');
-        }
-        $value = $json->entry[0]->changes[0]->value;
-        $message = $value->messages[0] ?? null;
-        $status = $value->statuses[0] ?? null;
-
-        if (!$message && !$status) {
-            throw new Exception('Invalid payload');
-        }
-
-        if ($message) {
-            $data = [
-                'wamid'     => $message->id,
-                'profile'   => $value->contacts[0]->profile->name,
-                'from'      => $message->from,
-                'type'      => $message->type,
-                'message'   => $message->{$message->type},
-                'timestamp' => $message->timestamp,
-            ];
-        } else {
-            $data = [
-                'wamid'     => $status->id,
-                'profile'   => $value->metadata->display_phone_number,
-                'from'      => $status->recipient_id,
-                'type'      => 'status',
-                'message'   => ['status' => $status->status],
-                'timestamp' => $status->timestamp,
-            ];
-        }
-
-        return $data;
     }
 }
