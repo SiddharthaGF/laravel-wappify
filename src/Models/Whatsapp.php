@@ -8,7 +8,6 @@ use AiluraCode\Wappify\Casts\CastsMessageType;
 use AiluraCode\Wappify\Concern\IsMessageable;
 use AiluraCode\Wappify\Concern\IsTransformable;
 use AiluraCode\Wappify\Concern\IsValidable;
-use AiluraCode\Wappify\Contracts\Messages\ShouldEditMessage;
 use AiluraCode\Wappify\Contracts\ShouldMessage;
 use AiluraCode\Wappify\Enums\MessageType;
 use AiluraCode\Wappify\Models\Messages\AudioMessage;

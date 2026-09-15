@@ -1,31 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Concern;
 
+use AiluraCode\Wappify\Entities\BaseMessage;
+
 /**
- * Provides functions to edit a Whatsapp message.
+ * Provides a real `toArray()` for message DTOs.
  *
- * @since 1.0.0
+ * `IsMessageable::setMessage()` writes a DTO's editable keys into the stored
+ * payload, so this method must enumerate the DTO's actual typed properties
+ * (including parent traits) instead of returning an identity-mapped array.
  *
- * @version 1.0.0
- *
- * @author SiddharthaGF <livesanty_@hotmail.com>
+ * @phpstan-require-extends BaseMessage
  */
 trait IsEditable
 {
     /**
-     * Convert the content message to an array.
-     *
-     * @return array<string, mixed> The message as an array
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        $array = [];
-        // @phpstan-ignore-next-line
-        foreach ($this as $key => $value) {
-            $array[$key] = $value;
-        }
-
-        return $array;
+        return array_filter(get_object_vars($this), fn ($property) => is_string($property), ARRAY_FILTER_USE_KEY);
     }
 }
