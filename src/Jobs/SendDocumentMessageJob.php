@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Jobs;
 
 use AiluraCode\Wappify\Wappify;
@@ -13,39 +15,43 @@ use Netflie\WhatsAppCloudApi\Message\Media\LinkID;
 use Netflie\WhatsAppCloudApi\Response\ResponseException;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class SendDocumentMessageJob implements ShouldQueue
+final class SendDocumentMessageJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(private string $from, private Media $document, private $account = 'default')
-    {
-    }
+    public function __construct(
+        private readonly string $from,
+        private readonly Media $document,
+        private readonly string $account = 'default',
+    ) {}
 
     /**
-     * Execute the job.
-     *
      * @throws ResponseException
      * @throws InvalidMessage
      */
     public function handle(): void
     {
-        $document_link = $this->document->getUrl();
-        $document_link = str_replace('http://cactu-pachanoi.test', 'https://united-hip-macaw.ngrok-free.app/cactu-pachanoi/public', $document_link);
-        $document_name = $this->document->name;
-        $document_caption = "Document: $document_name";
-        $link_id = new LinkID($document_link);
+        $documentLink = $this->resolveDocumentUrl();
+        $documentName = $this->document->name;
+        $documentCaption = "Document: $documentName";
+        $linkId = new LinkID($documentLink);
         $response = whatsapp($this->account)->sendDocument(
             $this->from,
-            $link_id,
-            $document_name,
-            $document_caption
+            $linkId,
+            $documentName,
+            $documentCaption
         );
         Wappify::raise($response)->get()->save();
+    }
+
+    /**
+     * Resolve the public document URL verbatim, without host rewrites.
+     */
+    public function resolveDocumentUrl(): string
+    {
+        return $this->document->getUrl();
     }
 }
