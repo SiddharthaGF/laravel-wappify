@@ -37,7 +37,7 @@ return [
             'facebook',
         ],
         'middleware_resources' => [
-            // 'auth',
+            'auth',
         ],
     ],
 
