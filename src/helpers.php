@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
+use AiluraCode\Wappify\Actions\VerifyWebhookChallenge;
 use AiluraCode\Wappify\Data\WhatsappAccountConfig;
 use AiluraCode\Wappify\WhatsAppCloudApi;
 use Illuminate\Http\Request;
-use Netflie\WhatsAppCloudApi\WebHook;
 
+/**
+ * @deprecated Will be removed in v2.0. Resolve the transport via the account config instead.
+ */
 function whatsapp(string $account = 'default'): WhatsAppCloudApi
 {
+    trigger_error('whatsapp() is deprecated and will be removed in v2.0.', E_USER_DEPRECATED);
+
     $config = WhatsappAccountConfig::fromConfig($account);
 
     return new WhatsAppCloudApi([
@@ -17,16 +22,15 @@ function whatsapp(string $account = 'default'): WhatsAppCloudApi
     ]);
 }
 
+/**
+ * @deprecated Will be removed in v2.0. Use `AiluraCode\Wappify\Actions\VerifyWebhookChallenge` instead.
+ */
 function webhook(Request $request, string $account = 'default'): string
 {
-    $config = WhatsappAccountConfig::fromConfig($account);
+    trigger_error('webhook() is deprecated and will be removed in v2.0. Use AiluraCode\\Wappify\\Actions\\VerifyWebhookChallenge instead.', E_USER_DEPRECATED);
 
-    $query = $request->query->all();
-    $token = $query['hub_verify_token'] ?? null;
-
-    if (! is_string($token) || $config->verify_token === '' || ! hash_equals($config->verify_token, $token)) {
-        abort(403, 'Invalid verify token.');
-    }
-
-    return (new WebHook())->verify($query, $config->verify_token);
+    return app(VerifyWebhookChallenge::class, [
+        'query' => $request->query->all(),
+        'account' => $account,
+    ])();
 }

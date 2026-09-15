@@ -52,8 +52,8 @@ Chain strategy: size-exception
 
 ## Unit 5: Deprecated facade (delegates only, no deletion)
 
-- [ ] 5.1 Modify `src/Wappify.php`, `src/helpers.php` (`whatsapp()`/`webhook()`): keep signatures, delegate to commands/mapper, emit `E_USER_DEPRECATED`, `@deprecated … will be removed in v2.0`.
-- [ ] 5.2 Test: `MessageShimTest::test_every_surviving_shim_is_marked_deprecated`, `WappifyTest::test_catch_method`. Rollback: revert 2 files; commands unaffected.
+- [x] 5.1 Modify `src/Wappify.php`, `src/helpers.php` (`whatsapp()`/`webhook()`): keep signatures, delegate to commands/mapper, emit `E_USER_DEPRECATED`, `@deprecated … will be removed in v2.0`.
+- [x] 5.2 Test: `MessageShimTest::test_every_surviving_shim_is_marked_deprecated`, `WappifyTest::test_catch_method`. Rollback: revert 2 files; commands unaffected.
 
 ## Unit 6: Full gate + docs
 
