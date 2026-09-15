@@ -57,6 +57,6 @@ Chain strategy: size-exception
 
 ## Unit 6: Full gate + docs
 
-- [ ] 6.1 Run FULL suite (`vendor/bin/phpunit`); stays-put gate: `MessageLifecycleTest`, `MessageTypeCastTest`, `ChatPaginationTest` unmodified-green.
-- [ ] 6.2 Docs: command catalog (9 commands + mapper + ownership rule) + facade deprecation + v2.0 removal note.
-- [ ] 6.3 Run `vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=512M --no-progress` and `--configuration=phpstan-tests.neon`: zero errors, zero new ignores. Run `vendor/bin/pint --test`: clean.
+- [x] 6.1 Run FULL suite (`vendor/bin/phpunit`); stays-put gate: `MessageLifecycleTest`, `MessageTypeCastTest`, `ChatPaginationTest` unmodified-green.
+- [x] 6.2 Docs: command catalog (9 commands + mapper + ownership rule) + facade deprecation + v2.0 removal note.
+- [x] 6.3 Run `vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=512M --no-progress` and `--configuration=phpstan-tests.neon`: zero errors, zero new ignores. Run `vendor/bin/pint --test`: clean.

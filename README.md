@@ -75,9 +75,41 @@ passed to `queue:listen` by `wappify:queue`. Failed jobs log the error and rethr
 - Document links are sent verbatim: the hardcoded `.test` to ngrok host rewrite was removed, so sent
   document URLs now match the configured public URL exactly.
 
+## Command actions
+
+Each use case is one invokable command under `AiluraCode\Wappify\Actions`, callable from HTTP,
+the queue, and tests. Jobs are thin queue wrappers (queue config, tries, timeout, backoff,
+uniqueness) that delegate to commands via the container.
+
+| Command | Does |
+|---|---|
+| `VerifyWebhookChallenge` | Returns the GET challenge for a valid token (`403` bad token, `404` unknown account) |
+| `EnqueueInboundPayload` | Dispatches `ReceiveMessageJob` with the raw body and acknowledges; never parses |
+| `IngestInboundMessage` | Persists an inbound message once by `wamid` (redelivery-safe), then mark-read + auto-download |
+| `ApplyStatusTransition` | Advances an existing row's lifecycle state; unknown/disallowed transitions are ignored, nothing is inserted |
+| `SendTextMessage` | One transport call + exactly one row |
+| `SendDocumentMessage` | One document send (verbatim `Media::getUrl`, `Document: {name}` caption) + exactly one row |
+| `SendButtonReplyMessage` | One button send + exactly one row; logs once, then rethrows for retry |
+| `DownloadMessageMedia` | Attaches media as `{wamid-stem}.{ext}` (image/audio/video/pdf only); `failed()` cleans partial files |
+| `DeleteMessage` | Deletes the row, or media-then-row in a transaction; missing rows throw `ModelNotFoundException` |
+
+`AiluraCode\Wappify\Support\PayloadMapper` is the pure, framework-free mapping layer
+(raw JSON / transport responses to `IncomingMessageData` / `StatusUpdatePayload`).
+
+Single persistence owner rule: commands own the one `save()` per outbound send. The
+`WhatsAppCloudApi` subclass is pure transport and MUST NOT self-persist responses.
+
+```php
+use AiluraCode\Wappify\Actions\SendTextMessage;
+
+$message = (new SendTextMessage('593960800736', 'hello'))();
+```
+
 ## Deprecations
 
 The legacy `to*()` and `is*()` message transformation members are deprecated compatibility shims. They keep working for one release cycle and will be removed in the next major version. Prefer the typed message models under `AiluraCode\Wappify\Models\Messages` and the `state` lifecycle column. See [CHANGELOG.md](CHANGELOG.md) for details.
+
+The `Wappify` statics and the `whatsapp()` / `webhook()` helpers are deprecated compatibility shims over the command layer. They keep working, emit `E_USER_DEPRECATED` on every call, and will be removed in v2.0. Prefer the commands in `AiluraCode\Wappify\Actions` (and `PayloadMapper`) instead.
 
 ## License
 
