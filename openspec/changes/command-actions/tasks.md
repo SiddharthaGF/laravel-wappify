@@ -41,9 +41,9 @@ Chain strategy: size-exception
 
 ## Unit 3: Send commands + single persist owner (GREEN the RED)
 
-- [ ] 3.1 Create `src/Actions/SendTextMessage.php`, `src/Actions/SendDocumentMessage.php` (verbatim `Media::getUrl`, `Document: {name}`), `src/Actions/SendButtonReplyMessage.php` (Log::error + rethrow); each ctor inputs + `__invoke(?WhatsAppCloudApi $transport = null)`, owns single `save()` via mapper.
-- [ ] 3.2 Strip auto-save overrides in `src/WhatsAppCloudApi.php` (pure transport) + thin `src/Jobs/SendTextMessageJob.php`, `src/Jobs/SendDocumentMessageJob.php`, `src/Jobs/SendButtonReplyMessageJob.php` (keep ctors/tries/timeout/backoff; delegate via `app()`).
-- [ ] 3.3 Test: Unit 1 REDs go GREEN; `DocumentUrlTest`, `JobFailureSemanticsTest`, `QueueConfigTest`. Rollback: revert Unit 3 files; inbound slice keeps working.
+- [x] 3.1 Create `src/Actions/SendTextMessage.php`, `src/Actions/SendDocumentMessage.php` (verbatim `Media::getUrl`, `Document: {name}`), `src/Actions/SendButtonReplyMessage.php` (Log::error + rethrow); each ctor inputs + `__invoke(?WhatsAppCloudApi $transport = null)`, owns single `save()` via mapper.
+- [x] 3.2 Strip auto-save overrides in `src/WhatsAppCloudApi.php` (pure transport) + thin `src/Jobs/SendTextMessageJob.php`, `src/Jobs/SendDocumentMessageJob.php`, `src/Jobs/SendButtonReplyMessageJob.php` (keep ctors/tries/timeout/backoff; delegate via `app()`).
+- [x] 3.3 Test: Unit 1 REDs go GREEN; `DocumentUrlTest`, `JobFailureSemanticsTest`, `QueueConfigTest`. Rollback: revert Unit 3 files; inbound slice keeps working.
 
 ## Unit 4: Ops commands (verify/media/delete) + remaining wiring
 

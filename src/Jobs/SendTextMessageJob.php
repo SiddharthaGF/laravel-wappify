@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Jobs;
 
-use AiluraCode\Wappify\Wappify;
+use AiluraCode\Wappify\Actions\SendTextMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -10,31 +12,28 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Netflie\WhatsAppCloudApi\Response\ResponseException;
 
-class SendTextMessageJob implements ShouldQueue
+final class SendTextMessageJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(private string $from, private string $text, private $account = 'default')
-    {
-    }
+    public function __construct(
+        private readonly string $from,
+        private readonly string $text,
+        private readonly string $account = 'default',
+    ) {}
 
     /**
-     * Execute the job.
-     *
      * @throws ResponseException
      */
     public function handle(): void
     {
-        $response = whatsapp($this->account)->sendTextMessage(
-            $this->from,
-            $this->text
-        );
-        Wappify::raise($response)->get()->save();
+        app(SendTextMessage::class, [
+            'to' => $this->from,
+            'text' => $this->text,
+            'account' => $this->account,
+        ])();
     }
 }

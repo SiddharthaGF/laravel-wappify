@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Jobs;
 
+use AiluraCode\Wappify\Actions\SendButtonReplyMessage;
 use AiluraCode\Wappify\Data\MessageButtons;
 use AiluraCode\Wappify\Data\WhatsappAccountConfig;
-use AiluraCode\Wappify\Wappify;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
-use Netflie\WhatsAppCloudApi\Message\ButtonReply\ButtonAction;
-use Throwable;
 
 final class SendButtonReplyMessageJob implements ShouldQueue
 {
@@ -52,18 +49,13 @@ final class SendButtonReplyMessageJob implements ShouldQueue
 
     public function handle(): void
     {
-        try {
-            $action = new ButtonAction($this->buttons->all());
-            $response = whatsapp($this->account)->sendButton(
-                $this->from,
-                $this->message,
-                $action
-            );
-            Wappify::raise($response)->get()->save();
-        } catch (Throwable $throwable) {
-            Log::error('SendButtonReplyMessageJob failed', ['account' => $this->account, 'exception' => $throwable]);
-
-            throw $throwable;
-        }
+        // The command owns failure semantics (logs once, then rethrows for
+        // tries/backoff), so this wrapper delegates without logging again.
+        app(SendButtonReplyMessage::class, [
+            'to' => $this->from,
+            'message' => $this->message,
+            'buttons' => $this->buttons,
+            'account' => $this->account,
+        ])();
     }
 }
