@@ -4,44 +4,45 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Http\Controllers;
 
-use AiluraCode\Wappify\Attributes\Controller as AiluraController;
-use AiluraCode\Wappify\Attributes\Route as AiluraRoute;
+use AiluraCode\Wappify\Data\WhatsappAccountConfig;
 use AiluraCode\Wappify\Jobs\ReceiveMessageJob;
-use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Config;
+use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\Response;
 
-#[AiluraController(name: 'webhook', prefix: 'webhook')]
 final class WebhookController extends Controller
 {
     /**
-     * Verify the webhook.
+     * Receive a WhatsApp message.
      */
-    #[AiluraRoute(name: 'webhook', method: AiluraRoute::GET, path: '{account}')]
-    public function webhook(string $account): void
+    public function receive(Request $request, string $account = 'default'): JsonResponse
     {
         try {
-            webhook($account);
-        } catch (\Throwable $e) {
-            throw new Exception("Account \"$account\" not found");
+            $queue = WhatsappAccountConfig::fromConfig($account)->queue;
+        } catch (InvalidArgumentException) {
+            return response()->json(['message' => "Account \"$account\" not found"], 404);
         }
+
+        ReceiveMessageJob::dispatch($request->getContent(), $account)
+            ->onQueue($queue->name)
+            ->onConnection($queue->connection);
+
+        return response()->json(['message' => 'Message received']);
     }
 
     /**
-     * Receive a Whatsapp message.
+     * Verify the webhook.
      */
-    #[AiluraRoute(name: 'receive', method: AiluraRoute::POST, path: '{account}')]
-    public function receive(string $account = 'default'): JsonResponse
+    public function webhook(Request $request, string $account = 'default'): Response
     {
-        $payload = file_get_contents('php://input');
-        $queue = Config::get("wappify.accounts.$account.queue");
-        ReceiveMessageJob::dispatch($payload, $account)
-            // @phpstan-ignore-next-line
-            ->onQueue($queue['name'])
-            ->onConnection($queue['connection']);
+        try {
+            $challenge = webhook($request, $account);
+        } catch (InvalidArgumentException) {
+            return response()->json(['message' => "Account \"$account\" not found"], 404);
+        }
 
-        // @phpstan-ignore-next-line
-        return response()->json(['message' => 'Message received']);
+        return response($challenge, 200, ['Content-Type' => 'text/plain']);
     }
 }

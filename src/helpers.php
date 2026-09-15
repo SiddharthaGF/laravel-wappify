@@ -2,75 +2,31 @@
 
 declare(strict_types=1);
 
-use AiluraCode\Wappify\Attributes\Controller as AttributesController;
-use AiluraCode\Wappify\Attributes\Route as AttributesRoute;
-use AiluraCode\Wappify\WhatsAppCloudApiExtended;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Route;
+use AiluraCode\Wappify\Data\WhatsappAccountConfig;
+use AiluraCode\Wappify\WhatsAppCloudApi;
+use Illuminate\Http\Request;
 use Netflie\WhatsAppCloudApi\WebHook;
 
-/**
- * Get the WhatsAppCloudApi instance.
- *
- * @return WhatsAppCloudApiExtended
- */
-function whatsapp(string $account = 'default'): WhatsAppCloudApiExtended
+function whatsapp(string $account = 'default'): WhatsAppCloudApi
 {
-    $account = config("wappify.accounts.$account");
+    $config = WhatsappAccountConfig::fromConfig($account);
 
-    return new WhatsAppCloudApiExtended([
-        'from_phone_number_id' => $account['number_id'],
-        'access_token'         => $account['token'],
+    return new WhatsAppCloudApi([
+        'from_phone_number_id' => $config->number_id,
+        'access_token' => $config->token,
     ]);
 }
 
-function webhook(string $account = 'default'): void
+function webhook(Request $request, string $account = 'default'): string
 {
-    $webhook = new WebHook();
-    // @phpstan-ignore-next-line
-    $account = Config::get("wappify.accounts.$account");
-    echo $webhook->verify($_GET, $account['token']);
-}
+    $config = WhatsappAccountConfig::fromConfig($account);
 
-function add_route($class): void
-{
-    $class = new ReflectionClass($class);
-    $classAttributes = $class->getAttributes(AttributesController::class);
+    $query = $request->query->all();
+    $token = $query['hub_verify_token'] ?? null;
 
-    if (empty($classAttributes)) {
-        return;
+    if (! is_string($token) || $config->verify_token === '' || ! hash_equals($config->verify_token, $token)) {
+        abort(403, 'Invalid verify token.');
     }
 
-    $instance = $classAttributes[0]->newInstance();
-    $prefix = $instance->prefix;
-    $middlewares = $instance->middlewares;
-    $controllerName = $class->getName();
-    $controllerMethods = $class->getMethods();
-
-    Route::prefix($prefix)
-        // @phpstan-ignore-next-line
-        ->middleware($middlewares)
-        ->group(
-            function () use ($controllerMethods, $controllerName, $instance): void {
-                foreach ($controllerMethods as $method) {
-                    $routes = $method->getAttributes(AttributesRoute::class);
-                    foreach ($routes as $route) {
-                        $instance = $route->newInstance();
-                        $path = $instance->path;
-                        $middlewares = $instance->middlewares;
-                        $name = $instance->name;
-                        $httpMethod = $instance->method;
-
-                        Route::match(
-                            [$httpMethod],
-                            $path,
-                            [$controllerName, $method->getName()]
-                        )
-                            ->name($name)
-                            // @phpstan-ignore-next-line
-                            ->middleware($middlewares);
-                    }
-                }
-            }
-        );
+    return (new WebHook())->verify($query, $config->verify_token);
 }

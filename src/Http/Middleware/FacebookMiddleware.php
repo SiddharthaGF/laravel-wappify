@@ -1,25 +1,57 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Http\Middleware;
 
+use AiluraCode\Wappify\Data\WhatsappAccountConfig;
 use Closure;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
-class FacebookMiddleware
+final class FacebookMiddleware
 {
     /**
      * Handle an incoming request.
      *
-     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
+     * @param Closure(Request): (Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $headers = config('wappify.middleware.facebook.headers');
-        if (!in_array($request->header('User-Agent'), $headers['User-Agent'], true)) {
-            return response()->json(['message' => 'Request rejected because the client does not belong to Facebook'], 401);
+        if (! $request->isMethod('post')) {
+            return $next($request);
+        }
+
+        $account = $request->route('account', 'default');
+
+        if (! is_string($account) || $account === '') {
+            return response()->json(['message' => 'Unknown WhatsApp account'], 404);
+        }
+
+        try {
+            $secret = WhatsappAccountConfig::fromConfig($account)->app_secret;
+        } catch (InvalidArgumentException) {
+            return response()->json(['message' => 'Unknown WhatsApp account'], 404);
+        }
+
+        $signature = $request->header('X-Hub-Signature-256', '');
+
+        if (! is_string($signature) || ! self::isValidSignature($request->getContent(), $signature, $secret)) {
+            return response()->json(['message' => 'Invalid webhook signature'], 401);
         }
 
         return $next($request);
+    }
+
+    private static function isValidSignature(string $body, string $signature, string $secret): bool
+    {
+        if ($secret === '' || ! str_starts_with($signature, 'sha256=')) {
+            return false;
+        }
+
+        $expected = 'sha256=' . hash_hmac('sha256', $body, $secret);
+
+        return hash_equals($expected, $signature);
     }
 }
