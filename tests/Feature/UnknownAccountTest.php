@@ -15,6 +15,7 @@ final class UnknownAccountTest extends TestCase
 
         config()->set('wappify.accounts.default.app_secret', 'test-app-secret');
         config()->set('wappify.accounts.default.verify_token', 'test-verify-token');
+        config()->set('cache.default', 'array');
 
         $get = $this->get('/api/whatsapp/webhook/ghost?hub.mode=subscribe&hub.verify_token=test-verify-token&hub.challenge=hello123');
         $get->assertNotFound();

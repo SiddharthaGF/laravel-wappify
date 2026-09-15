@@ -20,6 +20,7 @@ return [
                 'name' => 'wappify',
                 'tries' => 3,
                 'timeout' => 5,
+                'backoff' => [1, 5, 15],
             ],
             'download' => [
                 'automatic' => true,

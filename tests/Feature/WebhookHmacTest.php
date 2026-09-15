@@ -16,6 +16,7 @@ final class WebhookHmacTest extends TestCase
 
         config()->set('wappify.accounts.default.app_secret', 'test-app-secret');
         config()->set('wappify.accounts.default.verify_token', 'test-verify-token');
+        config()->set('cache.default', 'array');
     }
 
     public function test_accepts_valid(): void
