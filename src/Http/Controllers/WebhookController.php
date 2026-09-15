@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AiluraCode\Wappify\Http\Controllers;
 
 use AiluraCode\Wappify\Actions\EnqueueInboundPayload;
+use AiluraCode\Wappify\Actions\VerifyWebhookChallenge;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -36,7 +37,10 @@ final class WebhookController extends Controller
     public function webhook(Request $request, string $account = 'default'): Response
     {
         try {
-            $challenge = webhook($request, $account);
+            $challenge = app(VerifyWebhookChallenge::class, [
+                'query' => $request->query->all(),
+                'account' => $account,
+            ])();
         } catch (InvalidArgumentException) {
             return response()->json(['message' => "Account \"$account\" not found"], 404);
         }

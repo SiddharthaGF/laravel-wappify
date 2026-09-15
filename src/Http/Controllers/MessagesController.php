@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Http\Controllers;
 
+use AiluraCode\Wappify\Actions\DeleteMessage;
 use AiluraCode\Wappify\Models\Whatsapp;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Throwable;
@@ -30,15 +31,16 @@ final class MessagesController extends Controller
 
         $withMedia = (bool) ($request->get('withMedia'));
 
-        if ($withMedia) {
-            DB::transaction(static fn (): null => $whatsapp->deleteWithMedia());
-
-            return Response::json(['message' => 'Whatsapp deleted with media']);
+        try {
+            $result = app(DeleteMessage::class, [
+                'id' => $id,
+                'withMedia' => $withMedia,
+            ])();
+        } catch (ModelNotFoundException) {
+            return Response::json(['message' => 'Whatsapp not found'], 404);
         }
 
-        $whatsapp->delete();
-
-        return Response::json(['message' => 'Whatsapp deleted']);
+        return Response::json($result);
     }
 
     /**

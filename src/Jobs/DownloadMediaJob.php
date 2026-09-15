@@ -4,24 +4,14 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Jobs;
 
+use AiluraCode\Wappify\Actions\DownloadMessageMedia;
 use AiluraCode\Wappify\Data\WhatsappAccountConfig;
-use AiluraCode\Wappify\Exceptions\CastToMediaException;
-use AiluraCode\Wappify\Exceptions\PropertyNoExists;
-use AiluraCode\Wappify\Exceptions\UnknownMessageTypeException;
-use AiluraCode\Wappify\Models\Whatsapp;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
-use Netflie\WhatsAppCloudApi\Response\ResponseException;
-use RuntimeException;
-use Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist;
-use Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Throwable;
 
 final class DownloadMediaJob implements ShouldQueue
@@ -39,9 +29,9 @@ final class DownloadMediaJob implements ShouldQueue
 
     private readonly string $collection;
 
-    private readonly ?string $name;
+    private ?DownloadMessageMedia $command = null;
 
-    private ?string $resolvedFileName = null;
+    private readonly ?string $name;
 
     /** @var array<int, int> */
     private array $retryBackoff;
@@ -75,84 +65,24 @@ final class DownloadMediaJob implements ShouldQueue
 
     public function failed(Throwable $exception): void
     {
-        Log::error('DownloadMediaJob failed permanently', ['whatsapp_id' => $this->whatsappId, 'exception' => $exception]);
-
-        if ($this->resolvedFileName === null) {
-            return;
-        }
-
-        $whatsapp = Whatsapp::query()->find($this->whatsappId);
-
-        if (! $whatsapp instanceof Whatsapp) {
-            return;
-        }
-
-        $whatsapp->getMedia($this->collection)
-            ->where('file_name', $this->resolvedFileName)
-            ->each(static fn (Media $media): bool => (bool) $media->delete());
+        $this->command()->failed($exception);
     }
 
     /**
-     * @throws ResponseException
      * @throws Throwable
-     * @throws FileIsTooBig
-     * @throws FileDoesNotExist
-     * @throws UnknownMessageTypeException
-     * @throws CastToMediaException
-     * @throws PropertyNoExists
      */
     public function handle(): void
     {
-        try {
-            $whatsapp = Whatsapp::query()->find($this->whatsappId);
-
-            if (! $whatsapp instanceof Whatsapp) {
-                throw new ModelNotFoundException("WhatsApp row $this->whatsappId not found.");
-            }
-
-            $media = $whatsapp->toMedia();
-            $mimeType = $media->getMimeType();
-
-            if (! self::isAllowedMimeType($mimeType)) {
-                throw new RuntimeException("Unsupported media MIME type \"$mimeType\".");
-            }
-
-            $fullName = ($this->name ?? $this->formatWamId($whatsapp->getWamId())) . '.' . self::extensionFor($mimeType);
-            $this->resolvedFileName = $fullName;
-
-            $response = whatsapp($this->account)->downloadMedia($media->getId());
-            $whatsapp->addMediaFromStream($response->body())
-                ->usingFileName($fullName)
-                ->toMediaCollection($this->collection);
-        } catch (Throwable $throwable) {
-            Log::error('DownloadMediaJob failed', ['whatsapp_id' => $this->whatsappId, 'collection' => $this->collection, 'exception' => $throwable]);
-
-            throw $throwable;
-        }
+        $this->command()->__invoke();
     }
 
-    private static function extensionFor(string $mimeType): string
+    private function command(): DownloadMessageMedia
     {
-        $extension = explode('/', $mimeType)[1] ?? null;
-
-        if (! is_string($extension) || $extension === '') {
-            throw new RuntimeException("Cannot derive a file extension from MIME type \"$mimeType\".");
-        }
-
-        return $extension;
-    }
-
-    private static function isAllowedMimeType(string $mimeType): bool
-    {
-        if (str_starts_with($mimeType, 'image/') || str_starts_with($mimeType, 'audio/') || str_starts_with($mimeType, 'video/')) {
-            return true;
-        }
-
-        return $mimeType === 'application/pdf';
-    }
-
-    private function formatWamId(string $wamId): string
-    {
-        return rtrim(ltrim($wamId, 'wamid.'), '=');
+        return $this->command ??= app(DownloadMessageMedia::class, [
+            'whatsappId' => $this->whatsappId,
+            'collection' => $this->collection,
+            'name' => $this->name,
+            'account' => $this->account,
+        ]);
     }
 }

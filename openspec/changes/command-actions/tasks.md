@@ -47,8 +47,8 @@ Chain strategy: size-exception
 
 ## Unit 4: Ops commands (verify/media/delete) + remaining wiring
 
-- [ ] 4.1 Create `src/Actions/VerifyWebhookChallenge.php` (404 unknown / 403 bad token), `src/Actions/DownloadMessageMedia.php` (MIME gate, `{wamid-stem}.{ext}`, `failed()` cleanup), `src/Actions/DeleteMessage.php` (404 missing; media-then-row transaction); thin `src/Jobs/DownloadMediaJob.php`; wire `WebhookController` + `MessagesController`.
-- [ ] 4.2 Test: `WebhookHmacTest`, `DownloadMediaCtorTest`, `DestroyMediaTest`. Rollback: revert Unit 4 files only.
+- [x] 4.1 Create `src/Actions/VerifyWebhookChallenge.php` (404 unknown / 403 bad token), `src/Actions/DownloadMessageMedia.php` (MIME gate, `{wamid-stem}.{ext}`, `failed()` cleanup), `src/Actions/DeleteMessage.php` (404 missing; media-then-row transaction); thin `src/Jobs/DownloadMediaJob.php`; wire `WebhookController` + `MessagesController`.
+- [x] 4.2 Test: `WebhookHmacTest`, `DownloadMediaCtorTest`, `DestroyMediaTest`. Rollback: revert Unit 4 files only.
 
 ## Unit 5: Deprecated facade (delegates only, no deletion)
 
