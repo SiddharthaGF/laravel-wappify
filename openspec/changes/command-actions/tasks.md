@@ -35,9 +35,9 @@ Chain strategy: size-exception
 
 ## Unit 2: Inbound commands + ReceiveMessageJob
 
-- [ ] 2.1 Create `src/Actions/IngestInboundMessage.php` (firstOrCreate by wamid + verbatim 23000-resolve; mark-read/auto-download chain), `src/Actions/ApplyStatusTransition.php` (silent-ignore unknown/disallowed/terminal-Read; zero inserts), `src/Actions/EnqueueInboundPayload.php` (dispatch only, never parse).
-- [ ] 2.2 Thin `src/Jobs/ReceiveMessageJob.php` (keep ctor+ShouldBeUnique+uniqueId; `handle()` delegates via `app()`; log-and-bubble) + wire `src/Http/Controllers/WebhookController.php` to commands.
-- [ ] 2.3 Test: `IdempotentIngestTest`, `StatusWebhookTest`, `UnknownAccountTest::test_unknown_account_never_dispatches`. Rollback: revert Unit 2 files; mapper untouched.
+- [x] 2.1 Create `src/Actions/IngestInboundMessage.php` (firstOrCreate by wamid + verbatim 23000-resolve; mark-read/auto-download chain), `src/Actions/ApplyStatusTransition.php` (silent-ignore unknown/disallowed/terminal-Read; zero inserts), `src/Actions/EnqueueInboundPayload.php` (dispatch only, never parse).
+- [x] 2.2 Thin `src/Jobs/ReceiveMessageJob.php` (keep ctor+ShouldBeUnique+uniqueId; `handle()` delegates via `app()`; log-and-bubble) + wire `src/Http/Controllers/WebhookController.php` to commands.
+- [x] 2.3 Test: `IdempotentIngestTest`, `StatusWebhookTest`, `UnknownAccountTest::test_unknown_account_never_dispatches`. Rollback: revert Unit 2 files; mapper untouched.
 
 ## Unit 3: Send commands + single persist owner (GREEN the RED)
 

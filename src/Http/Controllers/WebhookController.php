@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Http\Controllers;
 
-use AiluraCode\Wappify\Data\WhatsappAccountConfig;
-use AiluraCode\Wappify\Jobs\ReceiveMessageJob;
+use AiluraCode\Wappify\Actions\EnqueueInboundPayload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -20,16 +19,15 @@ final class WebhookController extends Controller
     public function receive(Request $request, string $account = 'default'): JsonResponse
     {
         try {
-            $queue = WhatsappAccountConfig::fromConfig($account)->queue;
+            $acknowledgement = app(EnqueueInboundPayload::class, [
+                'payload' => $request->getContent(),
+                'account' => $account,
+            ])();
         } catch (InvalidArgumentException) {
             return response()->json(['message' => "Account \"$account\" not found"], 404);
         }
 
-        ReceiveMessageJob::dispatch($request->getContent(), $account)
-            ->onQueue($queue->name)
-            ->onConnection($queue->connection);
-
-        return response()->json(['message' => 'Message received']);
+        return response()->json($acknowledgement);
     }
 
     /**
