@@ -15,12 +15,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
 {
     protected function getEnvironmentSetUp($app): void
     {
-        $app->environment([
-            'database.default' => 'testing',
-            'database.connections.testing' => [
-                'driver' => 'sqlite',
-                'database' => ':memory:',
-            ],
+        $config = $app['config'];
+
+        $config->set('database.default', 'testing');
+        $config->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
         ]);
     }
 
