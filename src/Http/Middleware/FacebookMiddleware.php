@@ -7,17 +7,18 @@ namespace AiluraCode\Wappify\Http\Middleware;
 use AiluraCode\Wappify\Data\WhatsappAccountConfig;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use InvalidArgumentException;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final class FacebookMiddleware
 {
     /**
      * Handle an incoming request.
      *
-     * @param Closure(Request): (Response) $next
+     * @param Closure(Request): (SymfonyResponse) $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next): SymfonyResponse
     {
         if (! $request->isMethod('post')) {
             return $next($request);
@@ -26,19 +27,19 @@ final class FacebookMiddleware
         $account = $request->route('account', 'default');
 
         if (! is_string($account) || $account === '') {
-            return response()->json(['message' => 'Unknown WhatsApp account'], 404);
+            return Response::json(['message' => 'Unknown WhatsApp account'], 404);
         }
 
         try {
             $secret = WhatsappAccountConfig::fromConfig($account)->app_secret;
         } catch (InvalidArgumentException) {
-            return response()->json(['message' => 'Unknown WhatsApp account'], 404);
+            return Response::json(['message' => 'Unknown WhatsApp account'], 404);
         }
 
         $signature = $request->header('X-Hub-Signature-256', '');
 
         if (! is_string($signature) || ! self::isValidSignature($request->getContent(), $signature, $secret)) {
-            return response()->json(['message' => 'Invalid webhook signature'], 401);
+            return Response::json(['message' => 'Invalid webhook signature'], 401);
         }
 
         return $next($request);

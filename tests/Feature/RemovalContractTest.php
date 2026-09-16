@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Tests\Feature;
 
+use AiluraCode\Wappify\Concern\IsEditable;
+use AiluraCode\Wappify\Concern\IsMultimediable;
+use AiluraCode\Wappify\Concern\IsTexteable;
 use AiluraCode\Wappify\Concern\IsTransformable;
+use AiluraCode\Wappify\Contracts\Messages\ShouldMultimediaMessage;
 use AiluraCode\Wappify\Contracts\Messages\ShouldStatusChangeMessage;
+use AiluraCode\Wappify\Contracts\Messages\ShouldTextMessage;
 use AiluraCode\Wappify\Entities\ChangeStatusMessage;
+use AiluraCode\Wappify\Entities\TextMessage;
 use AiluraCode\Wappify\Enums\Exceptions\ExceptionCodes;
 use AiluraCode\Wappify\Enums\Exceptions\ExceptionMessages;
 use AiluraCode\Wappify\Enums\MessageType;
 use AiluraCode\Wappify\Exceptions\CastToInteractiveException;
+use AiluraCode\Wappify\Exceptions\CastToMediaException;
+use AiluraCode\Wappify\Exceptions\CastToTextException;
 use AiluraCode\Wappify\Tests\TestCase;
-use ReflectionClass;
 use ReflectionEnum;
 
 final class RemovalContractTest extends TestCase
@@ -29,12 +36,9 @@ final class RemovalContractTest extends TestCase
         $this->assertSame(true, config('wappify.accounts.default.download.automatic'));
     }
 
-    public function test_interactive_exception_uses_interactive_defaults(): void
+    public function test_interactive_exception_class_is_gone(): void
     {
-        $exception = new CastToInteractiveException();
-
-        $this->assertSame(ExceptionMessages::CAST_TO_INTERACTIVE_EXCEPTION->value, $exception->getMessage());
-        $this->assertSame(ExceptionCodes::CAST_TO_INTERACTIVE_EXCEPTION->value, $exception->getCode());
+        $this->assertFalse(class_exists(CastToInteractiveException::class));
     }
 
     public function test_message_type_loses_status_case_and_downloadable_helper(): void
@@ -49,14 +53,25 @@ final class RemovalContractTest extends TestCase
     {
         $this->assertFalse(class_exists(ChangeStatusMessage::class));
         $this->assertFalse(interface_exists(ShouldStatusChangeMessage::class));
+
+        // Legacy DTO entities
+        $this->assertFalse(class_exists(TextMessage::class));
+        $this->assertFalse(interface_exists(ShouldTextMessage::class));
+        $this->assertFalse(interface_exists(ShouldMultimediaMessage::class));
+
+        // Legacy concern traits
+        $this->assertFalse(trait_exists(IsTexteable::class));
+        $this->assertFalse(trait_exists(IsEditable::class));
+        $this->assertFalse(trait_exists(IsMultimediable::class));
+
+        // Legacy cast exceptions
+        $this->assertFalse(class_exists(CastToMediaException::class));
+        $this->assertFalse(class_exists(CastToTextException::class));
+        $this->assertFalse(class_exists(CastToInteractiveException::class));
     }
 
     public function test_transformation_surface_drops_status_helpers(): void
     {
-        $reflection = new ReflectionClass(IsTransformable::class);
-
-        foreach (['toStatus', 'isStatus', 'getStatus', 'hasStatus'] as $method) {
-            $this->assertFalse($reflection->hasMethod($method), $method);
-        }
+        $this->assertFalse(trait_exists(IsTransformable::class));
     }
 }

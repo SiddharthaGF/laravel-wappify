@@ -9,7 +9,6 @@ use AiluraCode\Wappify\Enums\StateNames;
 use AiluraCode\Wappify\Models\Messages\TextMessage;
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\States\Delivered;
-use AiluraCode\Wappify\States\MessageState;
 use AiluraCode\Wappify\States\Read;
 use AiluraCode\Wappify\States\Sent;
 use AiluraCode\Wappify\States\Waiting;
@@ -32,17 +31,14 @@ final class MessageLifecycleTest extends TestCase
 
         $message->state->transitionTo(Sent::class);
         $sendState = $message->state;
-        assert($sendState instanceof MessageState);
         $this->assertInstanceOf(Sent::class, $sendState);
 
         $message->state->transitionTo(Delivered::class);
         $deliveredState = $message->state;
-        assert($deliveredState instanceof MessageState);
         $this->assertInstanceOf(Delivered::class, $deliveredState);
 
         $message->state->transitionTo(Read::class);
         $readState = $message->state;
-        assert($readState instanceof MessageState);
         $this->assertInstanceOf(Read::class, $readState);
 
         $this->assertSame('read', DB::table('whatsapp')

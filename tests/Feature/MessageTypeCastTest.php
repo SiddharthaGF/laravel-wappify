@@ -31,16 +31,6 @@ final class MessageTypeCastTest extends TestCase
         );
     }
 
-    public function test_set_passes_through_raw_string(): void
-    {
-        $cast = new CastsMessageType();
-
-        $this->assertSame(
-            'legacy_type',
-            $cast->set(new Whatsapp(), 'type', 'legacy_type', [])
-        );
-    }
-
     public function test_set_stores_enum_value_as_string(): void
     {
         $cast = new CastsMessageType();

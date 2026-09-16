@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Data;
 
+use Illuminate\Support\Facades\Config;
 use InvalidArgumentException;
 
 final class WhatsappAccountConfig
@@ -19,7 +20,7 @@ final class WhatsappAccountConfig
 
     public static function fromConfig(string $account): self
     {
-        $raw = config('wappify.accounts.' . $account);
+        $raw = Config::get('wappify.accounts.' . $account);
 
         if (! is_array($raw)) {
             throw new InvalidArgumentException("Unknown WhatsApp account \"$account\".");

@@ -19,8 +19,8 @@ use Throwable;
 final class DeleteMessage
 {
     public function __construct(
-        private string $id,
-        private bool $withMedia = false,
+        private readonly string $id,
+        private readonly bool   $withMedia = false,
     ) {}
 
     /**
@@ -37,7 +37,7 @@ final class DeleteMessage
         }
 
         if ($this->withMedia) {
-            DB::transaction(static fn (): null => $whatsapp->deleteWithMedia());
+            DB::transaction(static fn () => $whatsapp->deleteWithMedia());
 
             return ['message' => 'Whatsapp deleted with media'];
         }

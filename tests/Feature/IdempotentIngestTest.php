@@ -6,8 +6,8 @@ namespace AiluraCode\Wappify\Tests\Feature;
 
 use AiluraCode\Wappify\Jobs\ReceiveMessageJob;
 use AiluraCode\Wappify\Models\Whatsapp;
+use AiluraCode\Wappify\Support\PayloadMapper;
 use AiluraCode\Wappify\Tests\TestCase;
-use AiluraCode\Wappify\Wappify;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +47,7 @@ final class IdempotentIngestTest extends TestCase
     public function test_redelivery_single_row(): void
     {
         $payload = (string) (file_get_contents(__DIR__ . '/../../stubs/messageText.stub.json'));
-        $data = Wappify::payloadToModel($payload);
+        $data = PayloadMapper::fromJson($payload);
         $job = new ReceiveMessageJob($payload);
 
         $first = $job->storeMessage($data);

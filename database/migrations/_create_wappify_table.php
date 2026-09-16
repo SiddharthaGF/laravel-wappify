@@ -1,10 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
+use AiluraCode\Wappify\Enums\MessageStatusType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class() extends Migration
+{
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('whatsapp');
+    }
+
     /**
      * Run the migrations.
      */
@@ -17,15 +29,8 @@ return new class () extends Migration {
             $table->string('from', 20);
             $table->string('type', 20);
             $table->json('message');
+            $table->string('state', 20)->default(MessageStatusType::WAITING->value);
             $table->bigInteger('timestamp');
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('whatsapp');
     }
 };

@@ -5,20 +5,28 @@ declare(strict_types=1);
 namespace AiluraCode\Wappify\Jobs;
 
 use AiluraCode\Wappify\Actions\ApplyStatusTransition;
+
 use AiluraCode\Wappify\Actions\IngestInboundMessage;
+
 use AiluraCode\Wappify\Data\IncomingMessageData;
 use AiluraCode\Wappify\Data\WhatsappAccountConfig;
+use AiluraCode\Wappify\Exceptions\UnknownMessageTypeException;
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\Support\PayloadMapper;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use Netflie\WhatsAppCloudApi\Response\ResponseException;
+use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Throwable;
+use UnexpectedValueException;
 
 final class ReceiveMessageJob implements ShouldBeUnique, ShouldQueue
 {
@@ -36,7 +44,7 @@ final class ReceiveMessageJob implements ShouldBeUnique, ShouldQueue
     private string $payload;
 
     /** @var array<int, int> */
-    private array $retryBackoff = [1, 5, 15];
+    private array $retryBackoff;
 
     public function __construct(string $payload, string $account = 'default')
     {
@@ -57,17 +65,32 @@ final class ReceiveMessageJob implements ShouldBeUnique, ShouldQueue
         return $this->retryBackoff;
     }
 
+    /**
+     * @throws CouldNotPerformTransition
+     * @throws Throwable
+     * @throws ResponseException
+     * @throws UnknownMessageTypeException
+     * @throws BindingResolutionException
+     */
     public function handle(): void
     {
         try {
             $status = PayloadMapper::statusFromJson($this->payload);
             if ($status !== null) {
-                app(ApplyStatusTransition::class, ['status' => $status])();
+                $transition = App::make(ApplyStatusTransition::class, ['status' => $status]);
+                if (! $transition instanceof ApplyStatusTransition) {
+                    throw new UnexpectedValueException('Cannot resolve ApplyStatusTransition command.');
+                }
+                $transition();
 
                 return;
             }
 
-            app(IngestInboundMessage::class, ['payload' => $this->payload, 'account' => $this->account])();
+            $ingest = App::make(IngestInboundMessage::class, ['payload' => $this->payload, 'account' => $this->account]);
+            if (! $ingest instanceof IngestInboundMessage) {
+                throw new UnexpectedValueException('Cannot resolve IngestInboundMessage command.');
+            }
+            $ingest();
         } catch (Throwable $throwable) {
             Log::error('ReceiveMessageJob failed', ['account' => $this->account, 'exception' => $throwable]);
 
@@ -80,21 +103,30 @@ final class ReceiveMessageJob implements ShouldBeUnique, ShouldQueue
      *
      * @internal Kept for the ingest path and its regression test; delegates to the command.
      *
-     * @throws QueryException When the failure is not a duplicate key.
+     * @throws QueryException|BindingResolutionException When the failure is not a duplicate key.
      */
     public function resolveDuplicateWrite(QueryException $exception, string $wamid): Whatsapp
     {
-        return app(IngestInboundMessage::class, ['payload' => $this->payload, 'account' => $this->account])
-            ->resolveDuplicateWrite($exception, $wamid);
+        $ingest = App::make(IngestInboundMessage::class, ['payload' => $this->payload, 'account' => $this->account]);
+        if (! $ingest instanceof IngestInboundMessage) {
+            throw new UnexpectedValueException('Cannot resolve IngestInboundMessage command.');
+        }
+
+        return $ingest->resolveDuplicateWrite($exception, $wamid);
     }
 
     /**
+     * @throws BindingResolutionException
      * @internal Kept for the ingest path and its regression test; delegates to the command.
      */
     public function storeMessage(IncomingMessageData $data): Whatsapp
     {
-        return app(IngestInboundMessage::class, ['payload' => $this->payload, 'account' => $this->account])
-            ->store($data);
+        $ingest = App::make(IngestInboundMessage::class, ['payload' => $this->payload, 'account' => $this->account]);
+        if (! $ingest instanceof IngestInboundMessage) {
+            throw new UnexpectedValueException('Cannot resolve IngestInboundMessage command.');
+        }
+
+        return $ingest->store($data);
     }
 
     public function uniqueId(): string

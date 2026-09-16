@@ -20,7 +20,7 @@ All notable changes to this package are documented in this file.
 - Resource routes require authentication by default (`middleware_resources` is `['auth']`); anonymous requests get `401`. (Breaking: update API consumers.)
 - `ChatController::chat`, `::me`, and `::you` return a `LengthAwarePaginator` (25 per page, identical shape to `MessagesController::index`) instead of unbounded collections. (Breaking: update API consumers.)
 - `MessagesController::destroy?withMedia` now runs `deleteWithMedia()` inside a DB transaction with media deleted before the row, atomically.
-- `ReceiveMessageJob` and `SendButtonReplyMessageJob` log handler errors and rethrow (retries/backoff apply) instead of dumping with `dd()`. `DownloadMediaJob` resolves media in `handle()`, rejects non-image/audio/video/pdf MIME types, and cleans partial media in `failed()`.
+- `ReceiveMessageJob` and the `SendButtonReplyMessage` action log handler errors and rethrow (retries/backoff apply) instead of dumping with `dd()`. `DownloadMediaJob` resolves media in `handle()`, rejects non-image/audio/video/pdf MIME types, and cleans partial media in `failed()`.
 - `DownloadMediaJob` accepts a Whatsapp row id and never throws from its constructor.
 - Document links are sent verbatim: the hardcoded `.test` to ngrok host rewrite was removed. (Breaking: sent URLs now match the configured public URL exactly.)
 - Status webhooks now apply a state transition to an existing row and never persist a new record.

@@ -7,6 +7,7 @@ namespace AiluraCode\Wappify\Actions;
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\Support\PayloadMapper;
 use AiluraCode\Wappify\WhatsAppCloudApi;
+use Exception;
 use Netflie\WhatsAppCloudApi\Response\ResponseException;
 use Netflie\WhatsAppCloudApi\WhatsAppCloudApi as BaseTransport;
 
@@ -18,13 +19,13 @@ use Netflie\WhatsAppCloudApi\WhatsAppCloudApi as BaseTransport;
 final class SendTextMessage
 {
     public function __construct(
-        private string $to,
-        private string $text,
-        private string $account = 'default',
+        private readonly string $to,
+        private readonly string $text,
+        private readonly string $account = 'default',
     ) {}
 
     /**
-     * @throws ResponseException
+     * @throws ResponseException|Exception
      */
     public function __invoke(?BaseTransport $transport = null): Whatsapp
     {

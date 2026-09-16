@@ -21,12 +21,15 @@ use Throwable;
 final class SendButtonReplyMessage
 {
     public function __construct(
-        private string $to,
-        private string $message,
-        private MessageButtons $buttons,
-        private string $account = 'default',
+        private readonly string         $to,
+        private readonly string         $message,
+        private readonly MessageButtons $buttons,
+        private readonly string         $account = 'default',
     ) {}
 
+    /**
+     * @throws Throwable
+     */
     public function __invoke(?BaseTransport $transport = null): Whatsapp
     {
         try {
@@ -43,7 +46,10 @@ final class SendButtonReplyMessage
 
             return $model;
         } catch (Throwable $throwable) {
-            Log::error('SendButtonReplyMessage failed', ['account' => $this->account, 'exception' => $throwable]);
+            Log::error('SendButtonReplyMessage failed', [
+                'account' => $this->account,
+                'exception' => $throwable
+            ]);
 
             throw $throwable;
         }

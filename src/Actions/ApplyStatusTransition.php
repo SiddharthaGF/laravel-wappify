@@ -17,7 +17,7 @@ use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 final class ApplyStatusTransition
 {
     public function __construct(
-        private StatusUpdatePayload $status,
+        private readonly StatusUpdatePayload $status,
     ) {}
 
     /**

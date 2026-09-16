@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Tests\Feature;
 
+use AiluraCode\Wappify\Actions\SendButtonReplyMessage;
 use AiluraCode\Wappify\Data\MessageButtons;
 use AiluraCode\Wappify\Jobs\ReceiveMessageJob;
-use AiluraCode\Wappify\Jobs\SendButtonReplyMessageJob;
 use AiluraCode\Wappify\Tests\TestCase;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -17,12 +17,12 @@ use Throwable;
 
 final class JobFailureSemanticsTest extends TestCase
 {
-    public function test_button_reply_job_bubbles_transient_failure(): void
+    public function test_button_reply_action_bubbles_transient_failure(): void
     {
         $spy = Log::spy();
 
         try {
-            (new SendButtonReplyMessageJob('593960800736', 'hello', new MessageButtons([])))->handle();
+            (new SendButtonReplyMessage('593960800736', 'hello', new MessageButtons([])))();
             $this->fail('Expected the transient send failure to bubble up.');
         } catch (Throwable) {
             // Expected: logged, then rethrown for tries/backoff.

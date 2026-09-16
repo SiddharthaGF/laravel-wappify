@@ -17,8 +17,8 @@ use InvalidArgumentException;
 final class EnqueueInboundPayload
 {
     public function __construct(
-        private string $payload,
-        private string $account = 'default',
+        private readonly string $payload,
+        private readonly string $account = 'default',
     ) {}
 
     /**

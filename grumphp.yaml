@@ -1,5 +1,5 @@
-# Don't touch this file if you don't know what you are doing.
 grumphp:
   tasks:
-    phpcsfixer2:
-
+    pint:
+      metadata:
+        label: "Run Pint"

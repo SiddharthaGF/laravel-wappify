@@ -13,14 +13,14 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 /**
  * Mirrors the interactive subtype accessor exposed by the legacy DTO.
  *
- * @property int                                          $id
- * @property string                                       $wamid
- * @property string                                       $profile
- * @property string                                       $from
+ * @property int                $id
+ * @property string             $wamid
+ * @property string             $profile
+ * @property string             $from
  * @property MessageType|string $type
- * @property object                                       $message
- * @property int                                          $timestamp
- * @property MessageState      $state
+ * @property object             $message
+ * @property int                $timestamp
+ * @property MessageState       $state
  * @property-read MediaCollection<int, Media> $media
  * @property-read int|null $media_count
  *

@@ -17,8 +17,8 @@ use AiluraCode\Wappify\Models\Messages\TemplateMessage as TemplateMessageModel;
 use AiluraCode\Wappify\Models\Messages\TextMessage as TextMessageModel;
 use AiluraCode\Wappify\Models\Messages\VideoMessage as VideoMessageModel;
 use AiluraCode\Wappify\Models\Whatsapp;
+use AiluraCode\Wappify\Support\PayloadMapper;
 use AiluraCode\Wappify\Tests\TestCase;
-use AiluraCode\Wappify\Wappify;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
@@ -74,7 +74,7 @@ final class MessageDiscriminatorTest extends TestCase
     {
         $payload = (string) (file_get_contents(__DIR__ . '/../../stubs/messageText.stub.json'));
 
-        $model = Wappify::catch($payload)->get();
+        $model = PayloadMapper::toModel(PayloadMapper::fromJson($payload));
 
         $this->assertInstanceOf(VideoMessageModel::class, $model);
         $this->assertFalse($model->exists);

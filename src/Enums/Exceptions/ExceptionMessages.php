@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Enums\Exceptions;
 
-/**
- * @phpstan-type const string
- */
 enum ExceptionMessages: string
 {
     case BASE_EXCEPTION = 'An error occurred.';

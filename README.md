@@ -105,11 +105,9 @@ use AiluraCode\Wappify\Actions\SendTextMessage;
 $message = (new SendTextMessage('593960800736', 'hello'))();
 ```
 
-## Deprecations
+## Removed legacy surface
 
-The legacy `to*()` and `is*()` message transformation members are deprecated compatibility shims. They keep working for one release cycle and will be removed in the next major version. Prefer the typed message models under `AiluraCode\Wappify\Models\Messages` and the `state` lifecycle column. See [CHANGELOG.md](CHANGELOG.md) for details.
-
-The `Wappify` statics and the `whatsapp()` / `webhook()` helpers are deprecated compatibility shims over the command layer. They keep working, emit `E_USER_DEPRECATED` on every call, and will be removed in v2.0. Prefer the commands in `AiluraCode\Wappify\Actions` (and `PayloadMapper`) instead.
+The legacy `Wappify` statics, the `whatsapp()` / `webhook()` helpers, and the `to*()` / `is*()` transformation shims were removed. Use the commands in `AiluraCode\Wappify\Actions` (and `PayloadMapper`) and the typed message models under `AiluraCode\Wappify\Models\Messages` with the `state` lifecycle column. See [CHANGELOG.md](CHANGELOG.md) for details.
 
 ## License
 

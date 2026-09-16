@@ -7,6 +7,7 @@ namespace AiluraCode\Wappify\Actions;
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\Support\PayloadMapper;
 use AiluraCode\Wappify\WhatsAppCloudApi;
+use Exception;
 use Netflie\WhatsAppCloudApi\Message\Error\InvalidMessage;
 use Netflie\WhatsAppCloudApi\Message\Media\LinkID;
 use Netflie\WhatsAppCloudApi\Response\ResponseException;
@@ -21,14 +22,13 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 final class SendDocumentMessage
 {
     public function __construct(
-        private string $to,
-        private Media $document,
-        private string $account = 'default',
+        private readonly string $to,
+        private readonly Media  $document,
+        private readonly string $account = 'default',
     ) {}
 
     /**
-     * @throws ResponseException
-     * @throws InvalidMessage
+     * @throws ResponseException|InvalidMessage|Exception
      */
     public function __invoke(?BaseTransport $transport = null): Whatsapp
     {

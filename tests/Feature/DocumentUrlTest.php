@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Tests\Feature;
 
-use AiluraCode\Wappify\Jobs\SendDocumentMessageJob;
+use AiluraCode\Wappify\Actions\SendDocumentMessage;
 use AiluraCode\Wappify\Tests\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -33,11 +33,11 @@ final class DocumentUrlTest extends TestCase
             'size' => 8,
         ]))->forceFill(['id' => 7]);
 
-        $job = new SendDocumentMessageJob('593960800736', $media);
+        $command = new SendDocumentMessage('593960800736', $media);
 
-        $this->assertStringContainsString('.test', $job->resolveDocumentUrl());
-        $this->assertStringNotContainsString('ngrok', $job->resolveDocumentUrl());
-        $this->assertSame($media->getUrl(), $job->resolveDocumentUrl());
+        $this->assertStringContainsString('.test', $command->resolveDocumentUrl());
+        $this->assertStringNotContainsString('ngrok', $command->resolveDocumentUrl());
+        $this->assertSame($media->getUrl(), $command->resolveDocumentUrl());
     }
 
     /**

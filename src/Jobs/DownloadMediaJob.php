@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace AiluraCode\Wappify\Jobs;
 
 use AiluraCode\Wappify\Actions\DownloadMessageMedia;
+
 use AiluraCode\Wappify\Data\WhatsappAccountConfig;
+
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Throwable;
+use UnexpectedValueException;
 
 final class DownloadMediaJob implements ShouldQueue
 {
@@ -63,6 +68,9 @@ final class DownloadMediaJob implements ShouldQueue
         return $this->retryBackoff;
     }
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function failed(Throwable $exception): void
     {
         $this->command()->failed($exception);
@@ -76,13 +84,21 @@ final class DownloadMediaJob implements ShouldQueue
         $this->command()->__invoke();
     }
 
+    /**
+     * @throws BindingResolutionException
+     */
     private function command(): DownloadMessageMedia
     {
-        return $this->command ??= app(DownloadMessageMedia::class, [
+        $command = $this->command ?? App::make(DownloadMessageMedia::class, [
             'whatsappId' => $this->whatsappId,
             'collection' => $this->collection,
             'name' => $this->name,
             'account' => $this->account,
         ]);
+        if (! $command instanceof DownloadMessageMedia) {
+            throw new UnexpectedValueException('Cannot resolve DownloadMessageMedia command.');
+        }
+
+        return $this->command = $command;
     }
 }

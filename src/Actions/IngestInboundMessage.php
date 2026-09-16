@@ -6,12 +6,16 @@ namespace AiluraCode\Wappify\Actions;
 
 use AiluraCode\Wappify\Data\IncomingMessageData;
 use AiluraCode\Wappify\Data\WhatsappAccountConfig;
+use AiluraCode\Wappify\Enums\MessageType;
+use AiluraCode\Wappify\Exceptions\UnknownMessageTypeException;
 use AiluraCode\Wappify\Jobs\DownloadMediaJob;
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\Support\PayloadMapper;
 use AiluraCode\Wappify\WhatsAppCloudApi;
+use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Config;
+use Netflie\WhatsAppCloudApi\Response\ResponseException;
 
 /**
  * Persist an inbound message payload exactly once, then chain mark-read
@@ -23,10 +27,13 @@ use Illuminate\Support\Facades\Config;
 final class IngestInboundMessage
 {
     public function __construct(
-        private string $payload,
-        private string $account = 'default',
+        private readonly string $payload,
+        private readonly string $account = 'default',
     ) {}
 
+    /**
+     * @throws UnknownMessageTypeException|ResponseException|Exception
+     */
     public function __invoke(): Whatsapp
     {
         $whatsapp = $this->store(PayloadMapper::fromJson($this->payload));
@@ -38,7 +45,13 @@ final class IngestInboundMessage
             return $whatsapp;
         }
 
-        if ($whatsapp->isMedia()) {
+        if (in_array($whatsapp->getType(), [
+            MessageType::AUDIO,
+            MessageType::DOCUMENT,
+            MessageType::IMAGE,
+            MessageType::STICKER,
+            MessageType::VIDEO
+        ], true)) {
             $queue = WhatsappAccountConfig::fromConfig($this->account)->queue;
             DownloadMediaJob::dispatch($whatsapp->id)
                 ->onQueue($queue->name)

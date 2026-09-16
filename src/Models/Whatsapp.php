@@ -6,7 +6,7 @@ namespace AiluraCode\Wappify\Models;
 
 use AiluraCode\Wappify\Casts\CastsMessageType;
 use AiluraCode\Wappify\Concern\IsMessageable;
-use AiluraCode\Wappify\Concern\IsTransformable;
+
 use AiluraCode\Wappify\Concern\IsValidable;
 use AiluraCode\Wappify\Contracts\ShouldMessage;
 use AiluraCode\Wappify\Enums\MessageType;
@@ -79,7 +79,7 @@ class Whatsapp extends Model implements HasMedia, ShouldMessage
     use HasStates;
     use InteractsWithMedia;
     use IsMessageable;
-    use IsTransformable;
+
     use IsValidable;
 
     public $timestamps = false;

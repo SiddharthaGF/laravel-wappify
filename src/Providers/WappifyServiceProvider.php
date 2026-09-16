@@ -30,12 +30,12 @@ final class WappifyServiceProvider extends ServiceProvider
                 $this->loadRoutesFrom(__DIR__ . '/../../routes/api.php');
             });
         $this->publishes([
-            __DIR__ . '/../../config/wappify.php' => config_path('wappify.php'),
+            __DIR__ . '/../../config/wappify.php' => $this->app->configPath('wappify.php'),
         ], 'config');
 
         $stub = __DIR__ . '/../../database/migrations/_create_wappify_table.php';
-        $file = database_path('migrations/' . date('Y_m_d_His', time()) . '_create_wappify_table.php');
-        if (glob(database_path('migrations/*_create_wappify_table.php')) === []) {
+        $file = $this->app->databasePath('migrations/' . date('Y_m_d_His', time()) . '_create_wappify_table.php');
+        if (glob($this->app->databasePath('migrations/*_create_wappify_table.php')) === []) {
             $this->publishes([$stub => $file], 'migrations');
         }
         if ($this->app->runningInConsole()) {
@@ -54,7 +54,6 @@ final class WappifyServiceProvider extends ServiceProvider
         $router->aliasMiddleware($facebookMiddleware, FacebookMiddleware::class);
         $router->aliasMiddleware($authMiddleware, AuthMiddleware::class);
         Gate::define('delete-whatsapp', static fn (mixed $user, mixed $message): bool => false);
-        require_once __DIR__ . '/../helpers.php';
     }
 
     public function register(): void

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Enums\Exceptions;
 
-/**
- * @phpstan-type const positive-int
- */
 enum ExceptionCodes: int
 {
     case BASE_EXCEPTION = 500;
