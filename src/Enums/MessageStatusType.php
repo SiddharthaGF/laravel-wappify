@@ -11,8 +11,8 @@ namespace AiluraCode\Wappify\Enums;
  */
 enum MessageStatusType: string
 {
-    case READ = 'read';
-    case SENT = 'sent';
-    case DELIVERED = 'delivered';
-    case WAITING = 'waiting';
+    case DELIVERED = StateNames::DELIVERED;
+    case READ = StateNames::READ;
+    case SENT = StateNames::SENT;
+    case WAITING = StateNames::WAITING;
 }

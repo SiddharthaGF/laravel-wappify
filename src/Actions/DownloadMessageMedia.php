@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Actions;
 
-use AiluraCode\Wappify\Exceptions\CastToMediaException;
-use AiluraCode\Wappify\Exceptions\PropertyNoExists;
-use AiluraCode\Wappify\Exceptions\UnknownMessageTypeException;
 use AiluraCode\Wappify\Models\Whatsapp;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Config;
@@ -66,7 +63,7 @@ final class DownloadMessageMedia
             $fullName = ($this->name ?? $this->formatWamId($whatsapp->getWamId())) . '.' . self::extensionFor($mimeType);
             $this->resolvedFileName = $fullName;
 
-            $response = whatsapp($this->account)->downloadMedia($media->getId());
+            $response = WhatsAppCloudApi::forAccount($this->account)->downloadMedia($media->getId());
             $whatsapp->addMediaFromStream($response->body())
                 ->usingFileName($fullName)
                 ->toMediaCollection($this->collection);

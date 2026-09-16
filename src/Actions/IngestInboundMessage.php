@@ -9,6 +9,7 @@ use AiluraCode\Wappify\Data\WhatsappAccountConfig;
 use AiluraCode\Wappify\Jobs\DownloadMediaJob;
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\Support\PayloadMapper;
+use AiluraCode\Wappify\WhatsAppCloudApi;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Config;
 
@@ -30,7 +31,7 @@ final class IngestInboundMessage
     {
         $whatsapp = $this->store(PayloadMapper::fromJson($this->payload));
 
-        whatsapp($this->account)->markMessageAsRead($whatsapp->getWamId());
+        WhatsAppCloudApi::forAccount($this->account)->markMessageAsRead($whatsapp->getWamId());
 
         $canDownload = (bool) Config::get('wappify.download.automatic');
         if (! $canDownload) {

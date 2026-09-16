@@ -1,22 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Entities;
 
-use AiluraCode\Wappify\Concern\IsMessageable;
 use AiluraCode\Wappify\Concern\IsValidable;
-use AiluraCode\Wappify\Contracts\ShouldMessage;
 
 /**
- * Class ShouldMessage.
+ * Base class for the typed message payload DTOs.
  *
- * @since 1.0.0
- *
- * @version 1.0.0
- *
- * @author SiddharthaGF <livesanty_@hotmail.com>
+ * Each DTO carries a single inbound payload and exposes the relevant accessors
+ * (text body, media identifiers, interactive subtype). Row-level concerns like
+ * `wamid`, `profile`, and `from` belong exclusively to the Eloquent `WhatsApp`
+ * model, so the DTO hierarchy does NOT implement `ShouldMessage`.
  */
-abstract class BaseMessage implements ShouldMessage
+abstract class BaseMessage
 {
-    use IsMessageable;
     use IsValidable;
 }

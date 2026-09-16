@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace AiluraCode\Wappify\Entities\Media;
 
 use AiluraCode\Wappify\Exceptions\PropertyNoExists;
+use stdClass;
 
-class VideoMessage extends BaseMultimediaMessage
+final class VideoMessage extends BaseMultimediaMessage
 {
     /**
-     * @param object $media
-     *
      * @throws PropertyNoExists
-     *
-     * @since 1.0.0
      */
-    public function __construct(object $media)
+    public function __construct(stdClass $media)
     {
         parent::__construct($media);
     }

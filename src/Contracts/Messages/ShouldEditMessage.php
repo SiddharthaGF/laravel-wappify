@@ -1,16 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Contracts\Messages;
 
-/**
- * Interface ShouldEditMessage.
- *
- * @since 1.0.0
- *
- * @version 1.0.0
- *
- * @author SiddharthaGF <livesanty_@hotmail.com>
- */
 interface ShouldEditMessage
 {
     /**

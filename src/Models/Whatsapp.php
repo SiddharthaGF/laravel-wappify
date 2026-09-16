@@ -25,12 +25,12 @@ use AiluraCode\Wappify\States\MessageState;
 use BackedEnum;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Parental\HasChildren;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\ModelStates\HasStates;
 use stdClass;
@@ -42,88 +42,36 @@ use stdClass;
  * @property string             $from
  * @property MessageType|string $type
  * @property stdClass           $message
- * @property MessageState       $state
  * @property int                $timestamp
- * @property-read Collection<int, Media> $media
+ * @property MessageState       $state
+ * @property-read MediaCollection<int, Media> $media
+ * @property-read int|null $media_count
  *
- * --- Scopes ---
- *
- * @method static Builder<static> findByFrom(string $from)
- * @method static static|null     findByWamid(string $wamid)
- * @method static Builder<static> chat(string $from)
- * @method static Builder<static> me()
- * @method static Builder<static> you()
- * @method static static|null     lastMessage()
- * @method static static|null     lastTextMessage()
- *
- * --- IsMessageable ---
- * @method string      getFrom()
- * @method stdClass    getMessage()
- * @method string      getProfile()
- * @method int         getTimestamp()
- * @method MessageType getType()
- * @method string      getWamId()
- * @method void        setFrom(string $from)
- * @method void        setMessage(\AiluraCode\Wappify\Contracts\Messages\ShouldEditMessage $message)
- * @method void        setProfile(string $profile)
- * @method void        setTimestamp(int $timestamp)
- * @method void        setType(MessageType $type)
- * @method void        setWamId(string $wamid)
- *
- * --- IsTransformable (deprecated) ---
- * @method bool                                                           isAudio()
- * @method bool                                                           isButtonReply()
- * @method bool                                                           isContact()
- * @method bool                                                           isDocument()
- * @method bool                                                           isImage()
- * @method bool                                                           isInteractive()
- * @method bool                                                           isLocation()
- * @method bool                                                           isMedia()
- * @method bool                                                           isSticker()
- * @method bool                                                           isText()
- * @method bool                                                           isVideo()
- * @method \AiluraCode\Wappify\Entities\Media\AudioMessage                toAudio()
- * @method \AiluraCode\Wappify\Entities\Media\DocumentMessage             toDocument()
- * @method \AiluraCode\Wappify\Entities\Media\ImageMessage                toImage()
- * @method \AiluraCode\Wappify\Entities\Interactive\InteractiveMessage    toInteractive()
- * @method \AiluraCode\Wappify\Contracts\Messages\ShouldMultimediaMessage toMedia()
- * @method \AiluraCode\Wappify\Entities\Media\StickerMessage              toSticker()
- * @method \AiluraCode\Wappify\Contracts\Messages\ShouldTextMessage       toText()
- * @method \AiluraCode\Wappify\Entities\Media\VideoMessage                toVideo()
- *
- * --- IsValidable ---
- * @method string validateProperty(\stdClass $object, string $property)
- *
- * --- Model methods ---
- * @method static static|null lastInteractive(\Illuminate\Contracts\Database\Query\Builder $query)
- *
- * --- Spatie\ModelStates ---
- * @method void                            transitionTo(string $stateClass, mixed ...$args)
- * @method bool                            canTransitionTo(string $stateClass)
- * @method \Spatie\ModelStates\StateConfig getStateConfig()
- * @method MessageState|null               getState(string $field = 'state')
- *
- * --- Spatie\MediaLibrary ---
- * @method \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, Media> getMedia(string $collectionName = '', callable|bool $filter = true)
- * @method bool                                                                                 hasMedia(string $collectionName = 'default')
- * @method Media|null                                                                           getFirstMedia(string $collectionName = 'default')
- * @method string|null                                                                          getFirstMediaUrl(string $collectionName = 'default', string $conversionName = '')
- * @method \Spatie\MediaLibrary\MediaCollections\FileAdder                                      file(mixed $file)
- * @method \Spatie\MediaLibrary\MediaCollections\FileAdder                                      files(mixed $files)
- *
- * --- Eloquent Builder ---
+ * @method static Builder<static>                   chat(string $from)
+ * @method static Builder<static>|Whatsapp          childrenWith(array<int|string, mixed> $relations)
+ * @method static Builder<static>|Whatsapp          childrenWithCount(array<int|string, mixed> $relations)
+ * @method static Builder<static>|Whatsapp          findByFrom(string $from)
+ * @method static Builder<static>|Whatsapp          findByWamid(string $wamid)
+ * @method static Builder<static>|Whatsapp          lastMessage()
+ * @method static Builder<static>|Whatsapp          lastTextMessage()
+ * @method static Builder<static>                   me()
+ * @method static Builder<static>|Whatsapp          newModelQuery()
+ * @method static Builder<static>|Whatsapp          newQuery()
+ * @method static Builder<static>|Whatsapp          orWhereNotState(string $column, $states)
+ * @method static Builder<static>|Whatsapp          orWhereState(string $column, $states)
+ * @method static Builder<static>                   query()
+ * @method static Builder<static>|Whatsapp          whereFrom($value)
+ * @method static Builder<static>|Whatsapp          whereId($value)
+ * @method static Builder<static>|Whatsapp          whereMessage($value)
+ * @method static Builder<static>|Whatsapp          whereNotState(string $column, $states)
+ * @method static Builder<static>|Whatsapp          whereProfile($value)
+ * @method static Builder<static>|Whatsapp          whereState($value)
+ * @method static Builder<static>|Whatsapp          whereTimestamp($value)
+ * @method static Builder<static>|Whatsapp          whereType($value)
+ * @method static Builder<static>|Whatsapp          whereWamid($value)
+ * @method static Builder<static>                   you()
  * @method static static|null                       find(mixed $id, array<int, string>|string $columns = ['*'])
- * @method static Collection<int, static>           get(array<int, string>|string $columns = ['*'])
  * @method static LengthAwarePaginator<int, static> paginate(int|null $perPage = null, array<int, string> $columns = ['*'], string $pageName = 'page', int|null $page = null)
- * @method static static                            firstOrFail(array<int, string>|string $columns = ['*'])
- * @method static static                            firstOrCreate(array<int, string> $attributes = [], array<int, string> $values = [])
- * @method static static                            updateOrCreate(array<int, string> $attributes, array<int, string> $values = [])
- * @method static Builder<static>                   where(array<string, mixed>|\Closure|string $column, mixed $operator = null, mixed $value = null, string $boolean = 'and')
- * @method static Builder<static>                   whereIn(string $column, mixed $values, string $boolean = 'and', bool $not = false)
- * @method static Builder<static>                   whereNotIn(string $column, mixed $values, string $boolean = 'and')
- * @method static Builder<static>                   orderBy(string $column, string $direction = 'asc')
- * @method static Builder<static>                   orderByDesc(string $column)
- * @method static Builder<static|Message>           findFromChild(string $type, mixed $id)
  */
 class Whatsapp extends Model implements HasMedia, ShouldMessage
 {
@@ -302,7 +250,7 @@ class Whatsapp extends Model implements HasMedia, ShouldMessage
      *
      * @return array<string, string>
      */
-    protected function casts()
+    protected function casts(): array
     {
         return [
             'message' => 'object',

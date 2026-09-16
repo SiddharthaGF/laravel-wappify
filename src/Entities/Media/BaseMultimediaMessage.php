@@ -9,20 +9,17 @@ use AiluraCode\Wappify\Concern\IsMultimediable;
 use AiluraCode\Wappify\Contracts\Messages\ShouldMultimediaMessage;
 use AiluraCode\Wappify\Entities\BaseMessage;
 use AiluraCode\Wappify\Exceptions\PropertyNoExists;
+use stdClass;
 
 abstract class BaseMultimediaMessage extends BaseMessage implements ShouldMultimediaMessage
 {
-    use IsMultimediable;
     use IsEditable;
+    use IsMultimediable;
 
     /**
-     * @param object $media
-     *
      * @throws PropertyNoExists
-     *
-     * @since 1.0.0
      */
-    public function __construct(object $media)
+    public function __construct(stdClass $media)
     {
         $this->id = $this->validateProperty($media, 'id');
         $this->sha256 = $this->validateProperty($media, 'sha256');

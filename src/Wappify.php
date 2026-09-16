@@ -84,6 +84,7 @@ final class Wappify
     }
 
     /**
+     * @throws Exception
      * @deprecated Will be removed in v2.0. Use the send commands in `AiluraCode\Wappify\Actions` instead.
      */
     public static function raise(Response $response): self
@@ -94,6 +95,7 @@ final class Wappify
     }
 
     /**
+     * @throws Exception
      * @deprecated Will be removed in v2.0. Use `PayloadMapper::fromResponse()` instead.
      */
     public static function responseToModel(Response $response, string $account = 'default'): IncomingMessageData

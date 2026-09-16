@@ -101,7 +101,6 @@ final class PayloadMapper
 
         $rawPayload = $whatsappRequest[$type] ?? [];
         $message = is_array($rawPayload) ? $rawPayload : [];
-        $message['status'] = MessageStatusType::WAITING->value;
 
         $wamid = self::stringOrEmpty(self::readId(self::readFirstMap(self::readKey($body, 'messages'))));
         $from = self::stringOrEmpty(self::readWaId(self::readFirstMap(self::readKey($body, 'contacts'))));

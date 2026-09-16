@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Enums\Exceptions;
 
 /**
@@ -8,9 +10,9 @@ namespace AiluraCode\Wappify\Enums\Exceptions;
 enum ExceptionCodes: int
 {
     case BASE_EXCEPTION = 500;
-    case CAST_TO_TEXT_EXCEPTION = 501;
     case CAST_TO_INTERACTIVE_EXCEPTION = 502;
-    case CAST_TO_IMAGE_EXCEPTION = 503;
     case CAST_TO_MEDIA_EXCEPTION = 504;
+    case CAST_TO_TEXT_EXCEPTION = 501;
     case PROPERTY_NO_EXISTS_EXCEPTION = 400;
+    case UNKNOWN_MESSAGE_TYPE_EXCEPTION = 505;
 }

@@ -6,6 +6,7 @@ namespace AiluraCode\Wappify\Actions;
 
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\Support\PayloadMapper;
+use AiluraCode\Wappify\WhatsAppCloudApi;
 use Netflie\WhatsAppCloudApi\Message\Error\InvalidMessage;
 use Netflie\WhatsAppCloudApi\Message\Media\LinkID;
 use Netflie\WhatsAppCloudApi\Response\ResponseException;
@@ -31,7 +32,7 @@ final class SendDocumentMessage
      */
     public function __invoke(?BaseTransport $transport = null): Whatsapp
     {
-        $transport ??= whatsapp($this->account);
+        $transport ??= WhatsAppCloudApi::forAccount($this->account);
 
         $documentName = $this->document->name;
         $response = $transport->sendDocument(

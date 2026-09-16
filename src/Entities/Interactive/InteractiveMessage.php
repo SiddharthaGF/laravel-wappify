@@ -4,47 +4,58 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Entities\Interactive;
 
+use AiluraCode\Wappify\Entities\BaseMessage;
+use AiluraCode\Wappify\Exceptions\PropertyNoExists;
 use AiluraCode\Wappify\Models\Whatsapp;
+use RuntimeException;
+use stdClass;
 
-class InteractiveMessage extends BaseInteractiveMessage
+final class InteractiveMessage extends BaseMessage
 {
-    public string $type;
-    private object $button_reply;
+    public string $interactiveType;
 
-    /**
-     * InteractiveMessage constructor.
-     *
-     * @param Whatsapp $whatsapp
-     */
+    private ?stdClass $buttonReply;
+
     public function __construct(Whatsapp $whatsapp)
     {
-        $this->type = $whatsapp->getMessage()->type ?? '';
-        $this->button_reply = $whatsapp->getMessage()->button_reply ?? null;
+        $payload = $whatsapp->getMessage();
+        $this->interactiveType = is_string($payload->type ?? null) ? $payload->type : '';
+        $button = $payload->button_reply ?? null;
+        $this->buttonReply = $button instanceof stdClass ? $button : null;
     }
 
     /**
-     * Check if the interactive message is a button.
-     */
-    public function isButtonReply(): bool
-    {
-        return 'button_reply' === $this->type;
-    }
-
-    /**
-     * Get the button reply id.
+     * @throws PropertyNoExists
      */
     public function getButtonReplyId(): string
     {
-        // @phpstan-ignore-next-line
-        return $this->button_reply->id;
+        return $this->validateProperty($this->requireButtonReply(), 'id');
     }
 
     /**
-     * Get the button reply title.
+     * @throws PropertyNoExists
      */
     public function getButtonReplyTitle(): string
     {
-        // @phpstan-ignore-next-line
-        return $this->button_reply->title;
+        return $this->validateProperty($this->requireButtonReply(), 'title');
+    }
+
+    public function getInteractiveType(): string
+    {
+        return $this->interactiveType;
+    }
+
+    public function isButtonReply(): bool
+    {
+        return $this->interactiveType === 'button_reply';
+    }
+
+    private function requireButtonReply(): stdClass
+    {
+        if ($this->buttonReply === null) {
+            throw new RuntimeException('Interactive message has no button_reply payload.');
+        }
+
+        return $this->buttonReply;
     }
 }

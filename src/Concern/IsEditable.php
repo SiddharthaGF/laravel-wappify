@@ -22,6 +22,6 @@ trait IsEditable
      */
     public function toArray(): array
     {
-        return array_filter(get_object_vars($this), fn ($property) => is_string($property), ARRAY_FILTER_USE_KEY);
+        return array_filter(get_object_vars($this), fn ($property): bool => is_string($property), ARRAY_FILTER_USE_KEY);
     }
 }

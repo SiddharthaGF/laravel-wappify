@@ -6,29 +6,23 @@ namespace AiluraCode\Wappify\Entities\Media;
 
 use AiluraCode\Wappify\Concern\IsEditable;
 use AiluraCode\Wappify\Exceptions\PropertyNoExists;
+use stdClass;
 
-class DocumentMessage extends BaseMultimediaMessage
+final class DocumentMessage extends BaseMultimediaMessage
 {
     use IsEditable;
 
     private string $name;
 
     /**
-     * @param object $media
-     *
      * @throws PropertyNoExists
      */
-    public function __construct(object $media)
+    public function __construct(stdClass $media)
     {
         parent::__construct($media);
         $this->name = $this->validateProperty($media, 'name');
     }
 
-    /**
-     * Get the name of the document.
-     *
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;

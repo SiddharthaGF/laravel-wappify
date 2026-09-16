@@ -6,7 +6,6 @@ namespace AiluraCode\Wappify\Concern;
 
 use AiluraCode\Wappify\Contracts\Messages\ShouldMultimediaMessage;
 use AiluraCode\Wappify\Contracts\Messages\ShouldTextMessage;
-use AiluraCode\Wappify\Entities\ChangeStatusMessage;
 use AiluraCode\Wappify\Entities\Interactive\InteractiveMessage;
 use AiluraCode\Wappify\Entities\Media\AudioMessage;
 use AiluraCode\Wappify\Entities\Media\DocumentMessage;
@@ -19,34 +18,31 @@ use AiluraCode\Wappify\Exceptions\CastToInteractiveException;
 use AiluraCode\Wappify\Exceptions\CastToMediaException;
 use AiluraCode\Wappify\Exceptions\CastToTextException;
 use AiluraCode\Wappify\Exceptions\PropertyNoExists;
-use Exception;
+use AiluraCode\Wappify\Exceptions\UnknownMessageTypeException;
 
 /**
- * Provides functions to transform a Whatsapp message.
+ * Provides the deprecated transformation API over the typed message hierarchy.
  *
- * @since 1.0.0
- *
- * @version 1.0.0
- *
- * @author SiddharthaGF <livesanty_@hotmail.com>
- * /
+ * Every public `to*()`/`is*()` member is kept as a thin shim for one release
+ * cycle and is scheduled for removal in the next major version. Prefer the
+ * typed child models in `AiluraCode\Wappify\Models\Messages`.
  */
 trait IsTransformable
 {
     /**
-     * Check if the message is an interactive message.
+     * Check if the message is an audio message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
-    public function isInteractive(): bool
+    public function isAudio(): bool
     {
-        return MessageType::INTERACTIVE === $this->getType();
+        return $this->hasType(MessageType::AUDIO);
     }
 
     /**
      * Check if the message is a button reply message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
     public function isButtonReply(): bool
     {
@@ -54,132 +50,160 @@ trait IsTransformable
     }
 
     /**
-     * Check if the message is a text message.
+     * Check if the message is a contact message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
-    public function isText(): bool
+    public function isContact(): bool
     {
-        return MessageType::TEXT === $this->getType();
-    }
-
-    /**
-     * Check if the message is an image message.
-     *
-     * @return bool
-     */
-    public function isImage(): bool
-    {
-        return MessageType::IMAGE === $this->getType();
-    }
-
-    /**
-     * Check if the message is a video message.
-     *
-     * @return bool
-     */
-    public function isVideo(): bool
-    {
-        return MessageType::VIDEO === $this->getType();
-    }
-
-    /**
-     * Check if the message is an audio message.
-     *
-     * @return bool
-     */
-    public function isAudio(): bool
-    {
-        return MessageType::AUDIO === $this->getType();
+        return $this->hasType(MessageType::CONTACT);
     }
 
     /**
      * Check if the message is a document message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
     public function isDocument(): bool
     {
-        return MessageType::DOCUMENT === $this->getType();
+        return $this->hasType(MessageType::DOCUMENT);
+    }
+
+    /**
+     * Check if the message is an image message.
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
+     */
+    public function isImage(): bool
+    {
+        return $this->hasType(MessageType::IMAGE);
+    }
+
+    /**
+     * Check if the message is an interactive message.
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
+     */
+    public function isInteractive(): bool
+    {
+        return $this->hasType(MessageType::INTERACTIVE);
     }
 
     /**
      * Check if the message is a location message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
     public function isLocation(): bool
     {
-        return MessageType::LOCATION === $this->getType();
+        return $this->hasType(MessageType::LOCATION);
     }
 
     /**
-     * Check if the message is a contact message.
+     * Check if the message is a media message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
-    public function isContact(): bool
+    public function isMedia(): bool
     {
-        return MessageType::CONTACT === $this->getType();
+        return $this->hasType(MessageType::IMAGE)
+            || $this->hasType(MessageType::VIDEO)
+            || $this->hasType(MessageType::AUDIO)
+            || $this->hasType(MessageType::DOCUMENT)
+            || $this->hasType(MessageType::STICKER);
     }
 
     /**
      * Check if the message is a sticker message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
     public function isSticker(): bool
     {
-        return MessageType::STICKER === $this->getType();
+        return $this->hasType(MessageType::STICKER);
     }
 
     /**
-     * Check if the message is a change of status.
+     * Check if the message is a text message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
-    public function isStatus(): bool
+    public function isText(): bool
     {
-        return MessageType::STATUS === $this->getType();
+        return $this->hasType(MessageType::TEXT);
     }
 
     /**
-     * Check if the message has a field status.
+     * Check if the message is a video message.
      *
-     * @return bool
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
-    public function hasStatus(): bool
+    public function isVideo(): bool
     {
-        return isset($this->getMessage()->status);
+        return $this->hasType(MessageType::VIDEO);
     }
 
     /**
-     * Cast the message to a text message.
+     * Cast the message to an audio message.
      *
-     * @return ShouldTextMessage
-     *
-     * @throws CastToTextException
+     * @throws CastToMediaException
      * @throws PropertyNoExists
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
-    public function toText(): ShouldTextMessage
+    public function toAudio(): AudioMessage
     {
-        if (!$this->isText()) {
-            throw new CastToTextException();
+        if (! $this->isAudio()) {
+            throw new CastToMediaException();
         }
 
-        return new TextMessage($this->getMessage());
+        return new AudioMessage($this->getMessage());
+    }
+
+    /**
+     * Cast the message to a document message.
+     *
+     * @throws CastToMediaException
+     * @throws PropertyNoExists
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
+     */
+    public function toDocument(): DocumentMessage
+    {
+        if (! $this->isDocument()) {
+            throw new CastToMediaException();
+        }
+
+        return new DocumentMessage($this->getMessage());
+    }
+
+    /**
+     * Cast the message to an image message.
+     *
+     * @throws CastToMediaException
+     * @throws PropertyNoExists
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
+     */
+    public function toImage(): ImageMessage
+    {
+        if (! $this->isImage()) {
+            throw new CastToMediaException();
+        }
+
+        return new ImageMessage($this->getMessage());
     }
 
     /**
      * Cast the message to an interactive message.
      *
-     * @return InteractiveMessage
-     *
      * @throws CastToInteractiveException
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
     public function toInteractive(): InteractiveMessage
     {
-        if (!$this->isInteractive()) {
+        if (! $this->isInteractive()) {
             throw new CastToInteractiveException();
         }
 
@@ -189,118 +213,37 @@ trait IsTransformable
     /**
      * Cast the message to a media message.
      *
-     * @return VideoMessage
+     * @throws CastToMediaException|PropertyNoExists|UnknownMessageTypeException
      *
-     * @throws CastToMediaException
-     * @throws PropertyNoExists
-     */
-    public function toVideo(): VideoMessage
-    {
-        if (!$this->isVideo()) {
-            throw new CastToMediaException();
-        }
-
-        return new VideoMessage($this->getMessage());
-    }
-
-    /**
-     * Cast the message to a status message.
-     *
-     * @return ChangeStatusMessage
-     *
-     * @throws PropertyNoExists
-     * @throws Exception
-     */
-    public function toStatus(): ChangeStatusMessage
-    {
-        if (!$this->isStatus()) {
-            throw new Exception('Cannot cast to status');
-        }
-
-        return new ChangeStatusMessage($this->getMessage());
-    }
-
-    /**
-     * Get the status of the message.
-     *
-     * @return ChangeStatusMessage
-     *
-     * @throws Exception
-     */
-    public function getStatus(): ChangeStatusMessage
-    {
-        return new ChangeStatusMessage($this->getMessage());
-    }
-
-    /**
-     * Cast the message to a media message.
-     *
-     * @return ShouldMultimediaMessage
-     *
-     * @throws CastToMediaException
-     * @throws PropertyNoExists
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
     public function toMedia(): ShouldMultimediaMessage
     {
-        if (!$this->isMedia()) {
+        if (! $this->isMedia()) {
             throw new CastToMediaException();
         }
 
         return match ($this->getType()) {
-            MessageType::IMAGE    => $this->toImage(),
-            MessageType::VIDEO    => $this->toVideo(),
-            MessageType::AUDIO    => $this->toAudio(),
+            MessageType::IMAGE => $this->toImage(),
+            MessageType::VIDEO => $this->toVideo(),
+            MessageType::AUDIO => $this->toAudio(),
             MessageType::DOCUMENT => $this->toDocument(),
-            MessageType::STICKER  => $this->toSticker(),
-            default               => throw new CastToMediaException(),
+            MessageType::STICKER => $this->toSticker(),
+            default => throw new CastToMediaException(),
         };
-    }
-
-    /**
-     * Cast the message to an image message.
-     *
-     * @return ImageMessage
-     *
-     * @throws CastToMediaException
-     * @throws PropertyNoExists
-     */
-    public function toImage(): ImageMessage
-    {
-        if (!$this->isImage()) {
-            throw new CastToMediaException();
-        }
-
-        return new ImageMessage($this->getMessage());
-    }
-
-    /**
-     * Cast the message to a document message.
-     *
-     * @return DocumentMessage
-     *
-     * @throws CastToMediaException
-     * @throws PropertyNoExists
-     */
-    public function toDocument(): DocumentMessage
-    {
-        if (!$this->isDocument()) {
-            throw new CastToMediaException();
-        }
-
-        return new DocumentMessage($this->getMessage());
     }
 
     /**
      * Cast the message to a sticker message.
      *
-     * @return StickerMessage
-     *
      * @throws CastToMediaException
      * @throws PropertyNoExists
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
     public function toSticker(): StickerMessage
     {
-        if (!$this->isSticker()) {
+        if (! $this->isSticker()) {
             throw new CastToMediaException();
         }
 
@@ -308,29 +251,53 @@ trait IsTransformable
     }
 
     /**
-     * Cast the message to an audio message.
+     * Cast the message to a text message.
      *
-     * @return AudioMessage
-     *
-     * @throws CastToMediaException
+     * @throws CastToTextException
      * @throws PropertyNoExists
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
-    public function toAudio(): AudioMessage
+    public function toText(): ShouldTextMessage
     {
-        if (!$this->isSticker()) {
-            throw new CastToMediaException();
+        if (! $this->isText()) {
+            throw new CastToTextException();
         }
 
-        return new AudioMessage($this->getMessage());
+        return new TextMessage($this->getMessage());
     }
 
     /**
-     * Check if the message is a media message.
+     * Cast the message to a video message.
      *
-     * @return bool
+     * @throws CastToMediaException
+     * @throws PropertyNoExists
+     *
+     * @deprecated Use the typed message models instead. Removed in the next major version.
      */
-    public function isMedia(): bool
+    public function toVideo(): VideoMessage
     {
-        return $this->getType()->isDownloadable();
+        if (! $this->isVideo()) {
+            throw new CastToMediaException();
+        }
+
+        return new VideoMessage($this->getMessage());
+    }
+
+    /**
+     * Compare the raw discriminator value with a mapped type.
+     *
+     * Tolerant by design: unknown or legacy values stay raw strings and simply
+     * do not match, so predicates never throw.
+     */
+    private function hasType(MessageType $type): bool
+    {
+        $value = $this->type;
+
+        if ($value instanceof MessageType) {
+            return $value === $type;
+        }
+
+        return $value === $type->value;
     }
 }

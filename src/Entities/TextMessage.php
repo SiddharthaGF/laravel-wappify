@@ -8,20 +8,19 @@ use AiluraCode\Wappify\Concern\IsEditable;
 use AiluraCode\Wappify\Concern\IsTexteable;
 use AiluraCode\Wappify\Contracts\Messages\ShouldTextMessage;
 use AiluraCode\Wappify\Exceptions\PropertyNoExists;
+use stdClass;
 
-class TextMessage extends BaseMessage implements ShouldTextMessage
+final class TextMessage extends BaseMessage implements ShouldTextMessage
 {
-    use IsTexteable;
     use IsEditable;
+    use IsTexteable;
 
     public string $body;
 
     /**
-     * @param object $message
-     *
      * @throws PropertyNoExists
      */
-    public function __construct(object $message)
+    public function __construct(stdClass $message)
     {
         $this->body = $this->validateProperty($message, 'body');
     }

@@ -7,6 +7,7 @@ namespace AiluraCode\Wappify\Actions;
 use AiluraCode\Wappify\Data\MessageButtons;
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\Support\PayloadMapper;
+use AiluraCode\Wappify\WhatsAppCloudApi;
 use Illuminate\Support\Facades\Log;
 use Netflie\WhatsAppCloudApi\Message\ButtonReply\ButtonAction;
 use Netflie\WhatsAppCloudApi\WhatsAppCloudApi as BaseTransport;
@@ -29,7 +30,7 @@ final class SendButtonReplyMessage
     public function __invoke(?BaseTransport $transport = null): Whatsapp
     {
         try {
-            $transport ??= whatsapp($this->account);
+            $transport ??= WhatsAppCloudApi::forAccount($this->account);
 
             $response = $transport->sendButton(
                 $this->to,
