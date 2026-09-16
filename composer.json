@@ -21,16 +21,16 @@
         "spatie/laravel-model-states": "~2.12,<2.14.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.1",
+        "phpunit/phpunit": "^10.5|^11.1",
         "phpstan/phpstan": "^2.0",
-        "orchestra/testbench": "^9.0",
-        "laravel/framework": "^11.7",
-        "laravel/pint": "^1.32",
-        "rector/rector": "^2.0",
-        "driftingly/rector-laravel": "^2.0",
+        "orchestra/testbench": "^8.0|^9.0",
+        "laravel/framework": "^10.0|^11.7",
+        "laravel/pint": "^1.4|^1.32",
+        "rector/rector": "^1.0|^2.0",
+        "driftingly/rector-laravel": "^1.0|^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
-        "barryvdh/laravel-ide-helper": "^3.7"
+        "barryvdh/laravel-ide-helper": "^3.0|^3.7"
     },
     "autoload": {
         "psr-4": {

@@ -3,6 +3,7 @@
 /.idea
 
 /vendor
+/composer.lock
 
 # Ignore QA tools cache files
 .phpstan-cache/

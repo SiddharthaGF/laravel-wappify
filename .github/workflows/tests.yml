@@ -1,0 +1,50 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - master
+      - 'refactor/**'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4', '8.5']
+        dependency-versions: ['']
+        include:
+          - php: '8.1'
+            dependency-versions: '--prefer-lowest --prefer-stable'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          extensions: dom, mbstring, sqlite3, xml
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer update --prefer-dist --no-interaction --no-progress ${{ matrix.dependency-versions }}
+
+      - name: Run test suite
+        run: vendor/bin/phpunit
