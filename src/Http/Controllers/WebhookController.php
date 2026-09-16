@@ -22,6 +22,7 @@ final class WebhookController extends Controller
 {
     /**
      * Receive a WhatsApp message.
+     *
      * @throws BindingResolutionException
      */
     public function receive(Request $request, string $account = 'default'): JsonResponse
@@ -58,8 +59,6 @@ final class WebhookController extends Controller
             $challenge = $verify();
         } catch (InvalidArgumentException) {
             return Response::json(['message' => "Account \"$account\" not found"], 404);
-        } catch (BindingResolutionException) {
-            //
         }
 
         return Response::make($challenge, 200, ['Content-Type' => 'text/plain']);

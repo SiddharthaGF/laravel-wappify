@@ -23,7 +23,7 @@ final class SendDocumentMessage
 {
     public function __construct(
         private readonly string $to,
-        private readonly Media  $document,
+        private readonly Media $document,
         private readonly string $account = 'default',
     ) {}
 

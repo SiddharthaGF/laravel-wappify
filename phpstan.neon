@@ -16,6 +16,9 @@ parameters:
 
     tmpDir: .phpstan-cache
 
+    stubFiles:
+        - stubs/HasAttributes.stub
+
     checkTooWideReturnTypesInProtectedAndPublicMethods: true
     checkUninitializedProperties: true
     checkDynamicProperties: true

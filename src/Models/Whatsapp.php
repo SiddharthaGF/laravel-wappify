@@ -84,6 +84,19 @@ class Whatsapp extends Model implements HasMedia, ShouldMessage
 
     public $timestamps = false;
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * Declared as a property instead of the `casts()` method: the method hook
+     * only exists in Laravel 11, while the property form is honored by both
+     * Laravel 10 and 11 (the 8.1 floor resolves to Laravel 10).
+     */
+    protected $casts = [
+        'message' => 'object',
+        'type' => CastsMessageType::class,
+        'state' => MessageState::class,
+    ];
+
     /** @var array<int, string> */
     protected $fillable = [
         'wamid',
@@ -240,19 +253,4 @@ class Whatsapp extends Model implements HasMedia, ShouldMessage
             $this->getMedia()->each(fn ($media) => $media->delete());
         }
     }
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * Declared as a property instead of the `casts()` method: the method hook
-     * only exists in Laravel 11, while the property form is honored by both
-     * Laravel 10 and 11 (the 8.1 floor resolves to Laravel 10).
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'message' => 'object',
-        'type' => CastsMessageType::class,
-        'state' => MessageState::class,
-    ];
 }

@@ -21,7 +21,7 @@ final class VerifyWebhookChallenge
      * @param array<string, mixed> $query
      */
     public function __construct(
-        private readonly array  $query,
+        private readonly array $query,
         private readonly string $account = 'default',
     ) {}
 

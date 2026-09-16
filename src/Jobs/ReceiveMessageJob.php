@@ -103,7 +103,7 @@ final class ReceiveMessageJob implements ShouldBeUnique, ShouldQueue
      *
      * @internal Kept for the ingest path and its regression test; delegates to the command.
      *
-     * @throws QueryException|BindingResolutionException When the failure is not a duplicate key.
+     * @throws QueryException When the failure is not a duplicate key.
      */
     public function resolveDuplicateWrite(QueryException $exception, string $wamid): Whatsapp
     {
@@ -117,6 +117,7 @@ final class ReceiveMessageJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * @throws BindingResolutionException
+     *
      * @internal Kept for the ingest path and its regression test; delegates to the command.
      */
     public function storeMessage(IncomingMessageData $data): Whatsapp

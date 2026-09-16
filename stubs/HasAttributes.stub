@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Illuminate\Database\Eloquent\Concerns;
+
+/**
+ * Stub for PHPStan: declare the Eloquent casts property with a value type so
+ * model redeclarations are not caught between property.phpDocType (parent
+ * type must match) and missingType.iterableValue (own type must have a value).
+ */
+trait HasAttributes
+{
+    /** @var array<string, string> */
+    protected $casts = [];
+}

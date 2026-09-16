@@ -27,15 +27,16 @@ final class DownloadMessageMedia
     private ?string $resolvedFileName = null;
 
     public function __construct(
-        private readonly int     $whatsappId,
-        private string           $collection = 'default',
+        private readonly int $whatsappId,
+        private string $collection = 'default',
         private readonly ?string $name = null,
-        private readonly string  $account = 'default',
-    )
-    {
+        private readonly string $account = 'default',
+    ) {
+        $configured = config('wappify.spatie.collection', 'default');
+        assert(is_string($configured));
         $this->collection = $collection !== 'default'
             ? $collection
-            : (string) config('wappify.spatie.collection', 'default');
+            : $configured;
     }
 
     /**
@@ -49,14 +50,14 @@ final class DownloadMessageMedia
         try {
             $whatsapp = Whatsapp::query()->find($this->whatsappId);
 
-            if (!$whatsapp instanceof Whatsapp) {
+            if (! $whatsapp instanceof Whatsapp) {
                 throw new ModelNotFoundException("WhatsApp row $this->whatsappId not found.");
             }
 
             $media = $whatsapp->getMessage();
             $mimeType = is_string($media->mime_type ?? null) ? $media->mime_type : '';
 
-            if (!self::isAllowedMimeType($mimeType)) {
+            if (! self::isAllowedMimeType($mimeType)) {
                 throw new RuntimeException("Unsupported media MIME type \"$mimeType\".");
             }
 
@@ -72,7 +73,7 @@ final class DownloadMessageMedia
             Log::error('DownloadMediaJob failed', [
                 'whatsapp_id' => $this->whatsappId,
                 'collection' => $this->collection,
-                'exception' => $throwable
+                'exception' => $throwable,
             ]);
 
             throw $throwable;
@@ -83,7 +84,7 @@ final class DownloadMessageMedia
     {
         Log::error('DownloadMediaJob failed permanently', [
             'whatsapp_id' => $this->whatsappId,
-            'exception' => $exception
+            'exception' => $exception,
         ]);
 
         if ($this->resolvedFileName === null) {
@@ -92,20 +93,20 @@ final class DownloadMessageMedia
 
         $whatsapp = Whatsapp::query()->find($this->whatsappId);
 
-        if (!$whatsapp instanceof Whatsapp) {
+        if (! $whatsapp instanceof Whatsapp) {
             return;
         }
 
         $whatsapp->getMedia($this->collection)
             ->where('file_name', $this->resolvedFileName)
-            ->each(static fn(Media $media): bool => (bool)$media->delete());
+            ->each(static fn (Media $media): bool => (bool) $media->delete());
     }
 
     private static function extensionFor(string $mimeType): string
     {
         $extension = explode('/', $mimeType)[1] ?? null;
 
-        if (!is_string($extension) || $extension === '') {
+        if (! is_string($extension) || $extension === '') {
             throw new RuntimeException("Cannot derive a file extension from MIME type \"$mimeType\".");
         }
 

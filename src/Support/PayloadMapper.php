@@ -168,6 +168,9 @@ final class PayloadMapper
         return is_numeric($value) ? (int) $value : 0;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     private static function readFirstMap(mixed $value): ?array
     {
         if (! is_array($value)) {

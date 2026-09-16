@@ -7,14 +7,14 @@ use AiluraCode\Wappify\Http\Controllers\MessagesController;
 use AiluraCode\Wappify\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
-/** @var string $apiPath */
-$apiPath = (string) config('wappify.api.path', 'wappify');
-/** @var string $apiName */
-$apiName = (string) config('wappify.api.name', 'wappify');
-/** @var array<int, string> $resourcesMiddleware */
-$resourcesMiddleware = (array) config('wappify.api.middleware_resources', []);
-/** @var array<int, string> $webhooksMiddleware */
-$webhooksMiddleware = (array) config('wappify.api.middleware_webhooks', []);
+$apiPath = config('wappify.api.path', 'wappify');
+assert(is_string($apiPath));
+$apiName = config('wappify.api.name', 'wappify');
+assert(is_string($apiName));
+$resourcesMiddleware = config('wappify.api.middleware_resources', []);
+assert(is_array($resourcesMiddleware));
+$webhooksMiddleware = config('wappify.api.middleware_webhooks', []);
+assert(is_array($webhooksMiddleware));
 
 Route::name($apiName . '.')
     ->prefix($apiPath)

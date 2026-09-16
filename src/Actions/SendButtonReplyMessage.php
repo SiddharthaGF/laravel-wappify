@@ -21,10 +21,10 @@ use Throwable;
 final class SendButtonReplyMessage
 {
     public function __construct(
-        private readonly string         $to,
-        private readonly string         $message,
+        private readonly string $to,
+        private readonly string $message,
         private readonly MessageButtons $buttons,
-        private readonly string         $account = 'default',
+        private readonly string $account = 'default',
     ) {}
 
     /**
@@ -48,7 +48,7 @@ final class SendButtonReplyMessage
         } catch (Throwable $throwable) {
             Log::error('SendButtonReplyMessage failed', [
                 'account' => $this->account,
-                'exception' => $throwable
+                'exception' => $throwable,
             ]);
 
             throw $throwable;

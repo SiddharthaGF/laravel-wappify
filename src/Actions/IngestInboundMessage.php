@@ -50,7 +50,7 @@ final class IngestInboundMessage
             MessageType::DOCUMENT,
             MessageType::IMAGE,
             MessageType::STICKER,
-            MessageType::VIDEO
+            MessageType::VIDEO,
         ], true)) {
             $queue = WhatsappAccountConfig::fromConfig($this->account)->queue;
             DownloadMediaJob::dispatch($whatsapp->id)

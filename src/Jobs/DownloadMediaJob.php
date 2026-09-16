@@ -49,7 +49,9 @@ final class DownloadMediaJob implements ShouldQueue
         string $account = 'default',
     ) {
         $this->whatsappId = $whatsappId;
-        $this->collection = $collection !== 'default' ? $collection : (string) config('wappify.spatie.collection', 'default');
+        $configuredCollection = config('wappify.spatie.collection', 'default');
+        assert(is_string($configuredCollection));
+        $this->collection = $collection !== 'default' ? $collection : $configuredCollection;
         $this->name = $name;
         $this->account = $account;
 
@@ -83,9 +85,6 @@ final class DownloadMediaJob implements ShouldQueue
         $this->command()->__invoke();
     }
 
-    /**
-     * @throws BindingResolutionException
-     */
     private function command(): DownloadMessageMedia
     {
         $command = $this->command ?? App::make(DownloadMessageMedia::class, [

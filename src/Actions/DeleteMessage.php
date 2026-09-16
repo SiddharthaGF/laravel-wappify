@@ -20,7 +20,7 @@ final class DeleteMessage
 {
     public function __construct(
         private readonly string $id,
-        private readonly bool   $withMedia = false,
+        private readonly bool $withMedia = false,
     ) {}
 
     /**
