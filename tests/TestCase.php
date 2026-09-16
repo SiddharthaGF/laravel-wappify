@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AiluraCode\Wappify\Tests;
 
 use AiluraCode\Wappify\Providers\WappifyServiceProvider;
+use Illuminate\Config\Repository;
 
 /**
  * @internal
@@ -16,6 +17,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function getEnvironmentSetUp($app): void
     {
         $config = $app['config'];
+        assert($config instanceof Repository);
 
         $config->set('database.default', 'testing');
         $config->set('database.connections.testing', [

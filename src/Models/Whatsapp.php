@@ -244,18 +244,15 @@ class Whatsapp extends Model implements HasMedia, ShouldMessage
     /**
      * Get the attributes that should be cast.
      *
-     * Overrides Eloquent's protected hook so PHPStan can see the typed return
-     * declared in the parent without an untyped property redeclaration in this
-     * class.
+     * Declared as a property instead of the `casts()` method: the method hook
+     * only exists in Laravel 11, while the property form is honored by both
+     * Laravel 10 and 11 (the 8.1 floor resolves to Laravel 10).
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'message' => 'object',
-            'type' => CastsMessageType::class,
-            'state' => MessageState::class,
-        ];
-    }
+    protected $casts = [
+        'message' => 'object',
+        'type' => CastsMessageType::class,
+        'state' => MessageState::class,
+    ];
 }
