@@ -7,7 +7,6 @@ namespace AiluraCode\Wappify\Actions;
 use AiluraCode\Wappify\Models\Whatsapp;
 use AiluraCode\Wappify\WhatsAppCloudApi;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Netflie\WhatsAppCloudApi\Response\ResponseException;
 use RuntimeException;
@@ -36,7 +35,7 @@ final class DownloadMessageMedia
     {
         $this->collection = $collection !== 'default'
             ? $collection
-            : Config::string('wappify.spatie.collection', 'default');
+            : (string) config('wappify.spatie.collection', 'default');
     }
 
     /**

@@ -15,7 +15,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Config;
 use Throwable;
 use UnexpectedValueException;
 
@@ -50,7 +49,7 @@ final class DownloadMediaJob implements ShouldQueue
         string $account = 'default',
     ) {
         $this->whatsappId = $whatsappId;
-        $this->collection = $collection !== 'default' ? $collection : Config::string('wappify.spatie.collection', 'default');
+        $this->collection = $collection !== 'default' ? $collection : (string) config('wappify.spatie.collection', 'default');
         $this->name = $name;
         $this->account = $account;
 

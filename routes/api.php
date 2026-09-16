@@ -5,15 +5,16 @@ declare(strict_types=1);
 use AiluraCode\Wappify\Http\Controllers\ChatController;
 use AiluraCode\Wappify\Http\Controllers\MessagesController;
 use AiluraCode\Wappify\Http\Controllers\WebhookController;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 
-$apiPath = Config::string('wappify.api.path', 'wappify');
-$apiName = Config::string('wappify.api.name', 'wappify');
+/** @var string $apiPath */
+$apiPath = (string) config('wappify.api.path', 'wappify');
+/** @var string $apiName */
+$apiName = (string) config('wappify.api.name', 'wappify');
 /** @var array<int, string> $resourcesMiddleware */
-$resourcesMiddleware = Config::array('wappify.api.middleware_resources');
+$resourcesMiddleware = (array) config('wappify.api.middleware_resources', []);
 /** @var array<int, string> $webhooksMiddleware */
-$webhooksMiddleware = Config::array('wappify.api.middleware_webhooks');
+$webhooksMiddleware = (array) config('wappify.api.middleware_webhooks', []);
 
 Route::name($apiName . '.')
     ->prefix($apiPath)
