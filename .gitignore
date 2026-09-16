@@ -3,14 +3,20 @@
 /.idea
 
 /vendor
+/composer.lock
 
 # Ignore QA tools cache files
-.phpcs-cache
+.phpstan-cache/
 .phpunit.result.cache
-.php-cs-fixer.cache
+.rector-cache
 
 # private files
 .env
 
 # misc
 /database/migrations/_create_media_table.php
+
+# SDD local tooling / local AI runtime state
+.atl/
+openspec/
+.codegraph/

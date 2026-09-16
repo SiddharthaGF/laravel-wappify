@@ -16,23 +16,26 @@
     "require": {
         "php": "^8.1",
         "netflie/whatsapp-cloud-api": "^2.0",
-        "spatie/laravel-medialibrary": "^9|^10|^11"
+        "spatie/laravel-medialibrary": "^9|^10|^11",
+        "tightenco/parental": "^1.6",
+        "spatie/laravel-model-states": "~2.12,<2.14.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.1",
-        "friendsofphp/php-cs-fixer": "^3.56",
-        "squizlabs/php_codesniffer": "*",
-        "phpstan/phpstan": "^1.10",
-        "orchestra/testbench": "^9.0",
-        "laravel/framework": "^11.7"
+        "phpunit/phpunit": "^10.5|^11.1",
+        "phpstan/phpstan": "^2.0",
+        "orchestra/testbench": "^8.0|^9.0",
+        "laravel/framework": "^10.0|^11.7",
+        "laravel/pint": "^1.4|^1.32",
+        "rector/rector": "^1.0|^2.0",
+        "driftingly/rector-laravel": "^1.0|^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "barryvdh/laravel-ide-helper": "^3.0|^3.7"
     },
     "autoload": {
         "psr-4": {
             "AiluraCode\\Wappify\\": "src/"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
@@ -48,15 +51,20 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [
-                "barryvdh/laravel-ide-helper"
-            ]
+            "dont-discover": []
         }
     },
     "scripts": {
         "test": ".\\vendor\\bin\\phpunit",
-        "php-cs-fixer": ".\\vendor\\bin\\php-cs-fixer fix -vvv",
-        "phpcs": ".\\vendor\\bin\\phpcbf .",
-        "phpstan": ".\\vendor\\bin\\phpstan analyse -c phpstan.neon"
+        "phpstan-src": "phpstan analyse --configuration=phpstan.neon --memory-limit=512M",
+        "phpstan-tests": "phpstan analyse --configuration=phpstan-tests.neon --memory-limit=512M",
+        "phpstan": [
+            "@phpstan-src",
+            "@phpstan-tests"
+        ],
+        "pint": "pint --test",
+        "pint:fix": "pint",
+        "rector": "vendor/bin/rector process",
+        "rector:dry-run": "vendor/bin/rector process --dry-run"
     }
 }

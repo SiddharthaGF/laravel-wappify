@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Jobs;
 
-use AiluraCode\Wappify\Contracts\Messages\ShouldMultimediaMessage;
-use AiluraCode\Wappify\Contracts\ShouldMessage;
-use AiluraCode\Wappify\Exceptions\CastToMediaException;
-use AiluraCode\Wappify\Exceptions\PropertyNoExists;
-use AiluraCode\Wappify\Models\Whatsapp;
+use AiluraCode\Wappify\Actions\DownloadMessageMedia;
+
+use AiluraCode\Wappify\Data\WhatsappAccountConfig;
+
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\App;
 use Throwable;
-
-use function Laravel\Prompts\error;
+use UnexpectedValueException;
 
 final class DownloadMediaJob implements ShouldQueue
 {
@@ -26,60 +25,78 @@ final class DownloadMediaJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    private string $extension;
-    private ShouldMultimediaMessage $media;
+    public int $timeout = 5;
 
-    /**
-     * @param Whatsapp    $whatsapp   The whatsapp message
-     * @param string      $collection The collection name
-     * @param string|null $name       The name of the media
-     *
-     * @throws CastToMediaException|PropertyNoExists
-     */
+    public int $tries = 3;
+
+    private readonly string $account;
+
+    private readonly string $collection;
+
+    private ?DownloadMessageMedia $command = null;
+
+    private readonly ?string $name;
+
+    /** @var array<int, int> */
+    private array $retryBackoff;
+
+    private readonly int $whatsappId;
+
     public function __construct(
-        private readonly ShouldMessage $whatsapp,
-        private string $collection = 'default',
-        private ?string $name = null,
+        int $whatsappId,
+        string $collection = 'default',
+        ?string $name = null,
+        string $account = 'default',
     ) {
-        // @phpstan-ignore-next-line
-        $this->collection = Config::get('wappify.spatie.collection');
-        if (is_null($this->name)) {
-            $this->name = $this->formatWamId();
-        }
-        $this->media = $this->whatsapp->toMedia();
-        $this->extension = $this->getExtension();
+        $this->whatsappId = $whatsappId;
+        $configuredCollection = config('wappify.spatie.collection', 'default');
+        assert(is_string($configuredCollection));
+        $this->collection = $collection !== 'default' ? $collection : $configuredCollection;
+        $this->name = $name;
+        $this->account = $account;
+
+        $queue = WhatsappAccountConfig::fromConfig($this->account)->queue;
+        $this->tries = $queue->tries;
+        $this->timeout = $queue->timeout;
+        $this->retryBackoff = $queue->backoff;
     }
 
+    /**
+     * @return array<int, int>
+     */
+    public function backoff(): array
+    {
+        return $this->retryBackoff;
+    }
+
+    /**
+     * @throws BindingResolutionException
+     */
+    public function failed(Throwable $exception): void
+    {
+        $this->command()->failed($exception);
+    }
+
+    /**
+     * @throws Throwable
+     */
     public function handle(): void
     {
-        try {
-            $fullName = $this->name . '.' . $this->extension;
-            $response = whatsapp()->downloadMedia($this->media->getId());
-            $this->whatsapp->addMediaFromStream($response->body())
-                ->usingFileName($fullName)
-                ->toMediaCollection($this->collection);
-        } catch (Throwable $th) {
-            error($th->getMessage());
+        $this->command()->__invoke();
+    }
+
+    private function command(): DownloadMessageMedia
+    {
+        $command = $this->command ?? App::make(DownloadMessageMedia::class, [
+            'whatsappId' => $this->whatsappId,
+            'collection' => $this->collection,
+            'name' => $this->name,
+            'account' => $this->account,
+        ]);
+        if (! $command instanceof DownloadMessageMedia) {
+            throw new UnexpectedValueException('Cannot resolve DownloadMessageMedia command.');
         }
-    }
 
-    /**
-     * Remove "wamid." and "=" from wamid.
-     *
-     * @return string
-     */
-    private function formatWamId(): string
-    {
-        return rtrim(ltrim($this->whatsapp->getWamId(), 'wamid.'), '=');
-    }
-
-    /**
-     * Get the extension of the media from a mime type.
-     *
-     * @return string
-     */
-    private function getExtension(): string
-    {
-        return explode('/', $this->media->getMimeType())[1];
+        return $this->command = $command;
     }
 }

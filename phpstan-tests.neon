@@ -1,0 +1,18 @@
+parameters:
+    paths:
+        - tests
+
+    level: max
+
+    phpVersion: 80100
+
+    tmpDir: .phpstan-cache
+
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkUninitializedProperties: true
+    checkDynamicProperties: true
+    reportMaybesInMethodSignatures: true
+    reportMaybesInPropertyPhpDocTypes: true
+    checkMissingOverrideMethodAttribute: false
+
+    ignoreErrors: []

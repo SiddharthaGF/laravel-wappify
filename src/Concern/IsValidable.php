@@ -1,42 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Concern;
 
 use AiluraCode\Wappify\Exceptions\PropertyNoExists;
+use stdClass;
+use Stringable;
 
 /**
- * Trait IsValidable.
- *
- * @since 1.0.0
- *
- * @version 1.0.0
- *
- * @author SiddharthaGF <livesanty_@hotmail.com>
+ * Validates that a property exists on an object and returns its value.
  */
 trait IsValidable
 {
     /**
-     * Validate if exists a property in an object.
-     *
-     * @param object $object   Object to validate
-     * @param string $property Property to validate
-     *
-     * @return string The property value
-     *
-     * @throws PropertyNoExists If the property does not exist
-     *
-     * @since 1.0.0
-     *
-     * @version 1.0.0
-     *
-     * @author SiddharthaGF <livesanty_@hotmail.com>
+     * @throws PropertyNoExists If the property does not exist or is not string-coercible
      */
-    public function validateProperty(object $object, string $property): string
+    public function validateProperty(stdClass $object, string $property): string
     {
-        if (!property_exists($object, $property)) {
+        if (! property_exists($object, $property)) {
             throw new PropertyNoExists($object, $property);
         }
 
-        return $object->$property;
+        $value = $object->$property;
+
+        if (! is_scalar($value) && ! $value instanceof Stringable) {
+            throw new PropertyNoExists($object, $property);
+        }
+
+        return (string) $value;
     }
 }

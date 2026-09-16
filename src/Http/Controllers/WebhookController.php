@@ -4,44 +4,63 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Http\Controllers;
 
-use AiluraCode\Wappify\Attributes\Controller as AiluraController;
-use AiluraCode\Wappify\Attributes\Route as AiluraRoute;
-use AiluraCode\Wappify\Jobs\ReceiveMessageJob;
-use Exception;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Config;
+use AiluraCode\Wappify\Actions\EnqueueInboundPayload;
 
-#[AiluraController(name: 'webhook', prefix: 'webhook')]
+use AiluraCode\Wappify\Actions\VerifyWebhookChallenge;
+
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Response;
+use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use UnexpectedValueException;
+
 final class WebhookController extends Controller
 {
     /**
-     * Verify the webhook.
+     * Receive a WhatsApp message.
+     *
+     * @throws BindingResolutionException
      */
-    #[AiluraRoute(name: 'webhook', method: AiluraRoute::GET, path: '{account}')]
-    public function webhook(string $account): void
+    public function receive(Request $request, string $account = 'default'): JsonResponse
     {
         try {
-            webhook($account);
-        } catch (\Throwable $e) {
-            throw new Exception("Account \"$account\" not found");
+            $enqueue = App::make(EnqueueInboundPayload::class, [
+                'payload' => $request->getContent(),
+                'account' => $account,
+            ]);
+            if (! $enqueue instanceof EnqueueInboundPayload) {
+                throw new UnexpectedValueException('Cannot resolve EnqueueInboundPayload command.');
+            }
+            $acknowledgement = $enqueue();
+        } catch (InvalidArgumentException) {
+            return Response::json(['message' => "Account \"$account\" not found"], 404);
         }
+
+        return Response::json($acknowledgement);
     }
 
     /**
-     * Receive a Whatsapp message.
+     * Verify the webhook.
      */
-    #[AiluraRoute(name: 'receive', method: AiluraRoute::POST, path: '{account}')]
-    public function receive(string $account = 'default'): JsonResponse
+    public function webhook(Request $request, string $account = 'default'): SymfonyResponse
     {
-        $payload = file_get_contents('php://input');
-        $queue = Config::get("wappify.accounts.$account.queue");
-        ReceiveMessageJob::dispatch($payload, $account)
-            // @phpstan-ignore-next-line
-            ->onQueue($queue['name'])
-            ->onConnection($queue['connection']);
+        try {
+            $verify = App::make(VerifyWebhookChallenge::class, [
+                'query' => $request->query->all(),
+                'account' => $account,
+            ]);
+            if (! $verify instanceof VerifyWebhookChallenge) {
+                throw new UnexpectedValueException('Cannot resolve VerifyWebhookChallenge command.');
+            }
+            $challenge = $verify();
+        } catch (InvalidArgumentException) {
+            return Response::json(['message' => "Account \"$account\" not found"], 404);
+        }
 
-        // @phpstan-ignore-next-line
-        return response()->json(['message' => 'Message received']);
+        return Response::make($challenge, 200, ['Content-Type' => 'text/plain']);
     }
 }

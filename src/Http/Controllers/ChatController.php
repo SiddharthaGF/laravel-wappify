@@ -4,47 +4,33 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Http\Controllers;
 
-use AiluraCode\Wappify\Attributes\Controller as AiluraController;
-use AiluraCode\Wappify\Attributes\Route as AiluraRoute;
 use AiluraCode\Wappify\Models\Whatsapp;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller;
 
-#[AiluraController(name: 'chat', prefix: 'chat')]
 final class ChatController extends Controller
 {
     /**
-     * Get all messages in a specific chat.
-     *
-     * @return Whatsapp[]
+     * @return LengthAwarePaginator<int, Whatsapp>
      */
-    #[AiluraRoute(name: 'chat', method: AiluraRoute::GET, path: '/{from}')]
-    public function chat(string $from): array
+    public function chat(string $from): LengthAwarePaginator
     {
-        // @phpstan-ignore-next-line
-        return Whatsapp::chat($from)->get();
+        return Whatsapp::chat($from)->paginate(25);
     }
 
     /**
-     * Get all messages from you.
-     *
-     * @return Whatsapp[]
+     * @return LengthAwarePaginator<int, Whatsapp>
      */
-    #[AiluraRoute(name: 'chat.me', method: AiluraRoute::GET, path: '/me')]
-    public function me(): array
+    public function me(): LengthAwarePaginator
     {
-        // @phpstan-ignore-next-line
-        return Whatsapp::me()->get();
+        return Whatsapp::me()->paginate(25);
     }
 
     /**
-     * Get all messages from you.
-     *
-     * @return Whatsapp[]
+     * @return LengthAwarePaginator<int, Whatsapp>
      */
-    #[AiluraRoute(name: 'chat.you', method: AiluraRoute::GET, path: '/you')]
-    public function you(): array
+    public function you(): LengthAwarePaginator
     {
-        // @phpstan-ignore-next-line
-        return Whatsapp::you()->get();
+        return Whatsapp::you()->paginate(25);
     }
 }

@@ -1,12 +1,29 @@
-# Don't touch this file if you don't know what you are doing.
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/nesbot/carbon/extension.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
 
 parameters:
-  level: 9
-  paths:
-    - src
-    - tests
-    - config
-    - database
-    - routes
-  excludePaths:
-    - ./vendor/*/data/*
+    paths:
+        - src
+        - config
+        - database
+        - routes
+
+    level: max
+
+    phpVersion: 80100
+
+    tmpDir: .phpstan-cache
+
+    stubFiles:
+        - stubs/HasAttributes.stub
+
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkUninitializedProperties: true
+    checkDynamicProperties: true
+    reportMaybesInMethodSignatures: true
+    reportMaybesInPropertyPhpDocTypes: true
+    checkMissingOverrideMethodAttribute: false
+
+    ignoreErrors: []

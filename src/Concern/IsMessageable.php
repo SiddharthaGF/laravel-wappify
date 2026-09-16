@@ -6,163 +6,100 @@ namespace AiluraCode\Wappify\Concern;
 
 use AiluraCode\Wappify\Contracts\Messages\ShouldEditMessage;
 use AiluraCode\Wappify\Enums\MessageType;
+use AiluraCode\Wappify\Exceptions\UnknownMessageTypeException;
+use stdClass;
 
 /**
- * Provides functions to manipulate a Whatsapp message.
+ * Provides typed accessors for the row-level message attributes on the Eloquent
+ * `WhatsApp` model.
  *
- * @since 1.0.0
- *
- * @version 1.0.0
- *
- * @author SiddharthaGF <livesanty_@hotmail.com>
+ * Each accessor reads through the typed properties surfaced by the model's
+ * `@property` and `casts` configuration. PHPStan resolves the return types from
+ * those declarations, and the PHP runtime enforces the declared return types at
+ * call time.
  */
 trait IsMessageable
 {
-    /**
-     * Get the unique identifier of the message.
-     *
-     * @see https://developers.facebook.com/docs/whatsapp/cloud-api/reference/messages/#mensages
-     *
-     * @return string
-     */
-    public function getWamId(): string
-    {
-        // @phpstan-ignore-next-line
-        return $this->wamid;
-    }
-
-    /**
-     * Set the unique identifier of the message.
-     *
-     * @param string $wamid
-     *
-     * @return void
-     */
-    public function setWamId(string $wamid): void
-    {
-        // @phpstan-ignore-next-line
-        $this->wamid = $wamid;
-    }
-
-    /**
-     * Get the profile name of the account that wrote the message.
-     *
-     * @return string
-     */
-    public function getProfile(): string
-    {
-        // @phpstan-ignore-next-line
-        return $this->profile;
-    }
-
-    /**
-     * Set the profile name of the account that wrote the message.
-     *
-     * @param string $profile
-     *
-     * @return void
-     */
-    public function setProfile(string $profile): void
-    {
-        // @phpstan-ignore-next-line
-        $this->profile = $profile;
-    }
-
-    /**
-     * Get the mobile number associated with the account that wrote the message.
-     *
-     * @return string
-     */
     public function getFrom(): string
     {
-        // @phpstan-ignore-next-line
         return $this->from;
     }
 
     /**
-     * Set the mobile number associated with the account that wrote the message.
-     *
-     * @param string $from
-     *
-     * @return void
+     * Returns the typed message payload. The `object` cast turns the JSON column
+     * into a `stdClass` so consumers can read nested properties off it.
      */
-    public function setFrom(string $from): void
+    public function getMessage(): stdClass
     {
-        // @phpstan-ignore-next-line
-        $this->from = $from;
-    }
-
-    /**
-     * Get the type of the message.
-     *
-     * @return MessageType
-     */
-    public function getType(): MessageType
-    {
-        // @phpstan-ignore-next-line
-        return $this->type;
-    }
-
-    /**
-     * Set the type of the message.
-     *
-     * @param MessageType $type
-     *
-     * @return void
-     */
-    public function setType(MessageType $type): void
-    {
-        // @phpstan-ignore-next-line
-        $this->type = $type;
-    }
-
-    /**
-     * Get the content of the message.
-     *
-     * @return object
-     */
-    public function getMessage(): object
-    {
-        // @phpstan-ignore-next-line
         return $this->message;
     }
 
-    /**
-     * Set the content of the message.
-     *
-     * @param ShouldEditMessage $message
-     *
-     * @return void
-     */
-    public function setMessage(ShouldEditMessage $message): void
+    public function getProfile(): string
     {
-        foreach ($message->toArray() as $key => $value) {
-            // @phpstan-ignore-next-line
-            $this->message->$key = $value;
-        }
+        return $this->profile;
     }
 
-    /**
-     * Get the timestamp of the time the message was received.
-     *
-     * @return int
-     */
     public function getTimestamp(): int
     {
-        // @phpstan-ignore-next-line
         return $this->timestamp;
     }
 
     /**
-     * Set the timestamp of the time the message was received.
+     * Returns the enum for mapped discriminators. Unknown or legacy values are
+     * hydrated as raw strings, and asking for the enum on them throws.
      *
-     * @param int $timestamp
-     *
-     * @return void
+     * @throws UnknownMessageTypeException
      */
+    public function getType(): MessageType
+    {
+        $type = $this->type;
+
+        if ($type instanceof MessageType) {
+            return $type;
+        }
+
+        throw new UnknownMessageTypeException($type);
+    }
+
+    public function getWamId(): string
+    {
+        return $this->wamid;
+    }
+
+    public function setFrom(string $from): void
+    {
+        $this->from = $from;
+    }
+
+    /**
+     * Copies each field from a DTO payload into the stored `stdClass`.
+     */
+    public function setMessage(ShouldEditMessage $message): void
+    {
+        $target = $this->getMessage();
+
+        foreach ($message->toArray() as $key => $value) {
+            $target->{$key} = $value;
+        }
+    }
+
+    public function setProfile(string $profile): void
+    {
+        $this->profile = $profile;
+    }
+
     public function setTimestamp(int $timestamp): void
     {
-        // @phpstan-ignore-next-line
         $this->timestamp = $timestamp;
+    }
+
+    public function setType(MessageType $type): void
+    {
+        $this->type = $type;
+    }
+
+    public function setWamId(string $wamid): void
+    {
+        $this->wamid = $wamid;
     }
 }

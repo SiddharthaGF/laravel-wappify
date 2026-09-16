@@ -1,17 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AiluraCode\Wappify\Exceptions;
 
 use AiluraCode\Wappify\Enums\Exceptions\ExceptionCodes;
 use AiluraCode\Wappify\Enums\Exceptions\ExceptionMessages;
 use Exception;
 
-class PropertyNoExists extends Exception
+final class PropertyNoExists extends Exception
 {
-    /**
-     * @param object $object   Object to validate
-     * @param string $property Property to validate
-     */
     public function __construct(
         private readonly object $object,
         private readonly string $property,

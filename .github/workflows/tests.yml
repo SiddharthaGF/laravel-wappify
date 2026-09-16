@@ -1,0 +1,103 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality (pint + phpstan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: dom, mbstring, sqlite3, xml
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-quality-composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-quality-composer-
+
+      - name: Install dependencies
+        run: |
+          # CI resolves broad dependency ranges (incl. lowest floor on 8.1).
+          # Laravel 10/11 carry published PKSA advisories, so disable the
+          # advisory block that would reject the whole range on update.
+          composer config policy.advisories.block false
+          composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Check code style
+        run: composer pint
+
+      - name: Static analysis
+        run: composer phpstan
+
+  tests:
+    name: PHP ${{ matrix.php }} (${{ matrix.label }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.1'
+            label: lowest
+            dependency-versions: '--prefer-lowest --prefer-stable'
+          - php: '8.1'
+            label: current
+            dependency-versions: ''
+          - php: '8.2'
+            label: current
+            dependency-versions: ''
+          - php: '8.3'
+            label: current
+            dependency-versions: ''
+          - php: '8.4'
+            label: current
+            dependency-versions: ''
+          - php: '8.5'
+            label: current
+            dependency-versions: ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          extensions: dom, mbstring, sqlite3, xml
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php }}-${{ matrix.label }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-${{ matrix.label }}-composer-
+
+      - name: Install dependencies
+        run: |
+          # CI resolves broad dependency ranges (incl. lowest floor on 8.1).
+          # Laravel 10/11 carry published PKSA advisories, so disable the
+          # advisory block that would reject the whole range on update.
+          composer config policy.advisories.block false
+          composer update --prefer-dist --no-interaction --no-progress ${{ matrix.dependency-versions }}
+
+      - name: Run test suite
+        run: vendor/bin/phpunit

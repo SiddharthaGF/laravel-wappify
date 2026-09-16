@@ -4,65 +4,70 @@ declare(strict_types=1);
 
 namespace AiluraCode\Wappify\Http\Controllers;
 
-use AiluraCode\Wappify\Attributes\Controller as AiluraController;
-use AiluraCode\Wappify\Attributes\Route as AiluraRoute;
+use AiluraCode\Wappify\Actions\DeleteMessage;
+
 use AiluraCode\Wappify\Models\Whatsapp;
+
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
+use Throwable;
+use UnexpectedValueException;
 
-#[AiluraController(name: 'messages', prefix: 'messages')]
 final class MessagesController extends Controller
 {
     /**
-     * Get all Whatsapp messages.
+     * @throws Throwable
      */
-    #[AiluraRoute(name: 'messages.index', method: AiluraRoute::GET)]
-    public function index(): LengthAwarePaginator
+    public function destroy(string $id, Request $request): JsonResponse
     {
-        // @phpstan-ignore-next-line
-        return Whatsapp::paginate(25);
+        $whatsapp = Whatsapp::find($id);
+        if ($whatsapp === null) {
+            return Response::json(['message' => 'Whatsapp not found'], 404);
+        }
+
+        Gate::authorize('delete-whatsapp', $whatsapp);
+
+        $withMedia = (bool) ($request->get('withMedia'));
+
+        try {
+            $delete = App::make(DeleteMessage::class, [
+                'id' => $id,
+                'withMedia' => $withMedia,
+            ]);
+            if (! $delete instanceof DeleteMessage) {
+                throw new UnexpectedValueException('Cannot resolve DeleteMessage command.');
+            }
+            $result = $delete();
+        } catch (ModelNotFoundException) {
+            return Response::json(['message' => 'Whatsapp not found'], 404);
+        }
+
+        return Response::json($result);
     }
 
     /**
-     * show a Whatsapp message.
+     * Get all Whatsapp messages.
      *
-     * @return JsonResponse
+     * @return LengthAwarePaginator<int, Whatsapp>
      */
-    #[AiluraRoute(name: 'messages.show', method: AiluraRoute::GET, path: '/{id}')]
+    public function index(): LengthAwarePaginator
+    {
+        return Whatsapp::paginate(25);
+    }
+
     public function show(string $id): JsonResponse|Whatsapp
     {
-        // @phpstan-ignore-next-line
         $whatsapp = Whatsapp::find($id);
-        if (!$whatsapp) {
+        if ($whatsapp === null) {
             return Response::json(['message' => 'Whatsapp not found'], 404);
         }
 
         return $whatsapp;
-    }
-
-    /**
-     * Delete a Whatsapp message.
-     */
-    #[AiluraRoute(name: 'messages.destroy', method: AiluraRoute::DELETE, path: '/{id}')]
-    public function destroy(string $id, Request $request): JsonResponse
-    {
-        // @phpstan-ignore-next-line
-        $withMedia = boolval($request->get('withMedia')) ?? false;
-        // @phpstan-ignore-next-line
-        $whatsapp = Whatsapp::find($id);
-        if (!$whatsapp) {
-            return Response::json(['message' => 'Whatsapp not found'], 404);
-        }
-        $whatsapp->delete();
-        if ($withMedia) {
-            $whatsapp->media->each(fn ($media) => $media->delete());
-
-            return Response::json(['message' => 'Whatsapp deleted with media']);
-        }
-
-        return Response::json(['message' => 'Whatsapp deleted']);
     }
 }
