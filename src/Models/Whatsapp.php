@@ -50,7 +50,7 @@ use stdClass;
  * @method static Builder<static>                   chat(string $from)
  * @method static Builder<static>|Whatsapp          childrenWith(array<int|string, mixed> $relations)
  * @method static Builder<static>|Whatsapp          childrenWithCount(array<int|string, mixed> $relations)
- * @method static Builder<static>|Whatsapp          findByFrom(string $from)
+ * @method static Builder<static>                   findByFrom(string $from)
  * @method static Builder<static>|Whatsapp          findByWamid(string $wamid)
  * @method static Builder<static>|Whatsapp          lastMessage()
  * @method static Builder<static>|Whatsapp          lastTextMessage()

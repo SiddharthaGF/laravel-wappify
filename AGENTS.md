@@ -24,7 +24,7 @@ Laravel **package** (`ailuracode/wappify`), not an app: no `.env`, no `artisan s
 
 ## Testing
 
-- `phpunit.xml` declares ONE suite: `tests/Feature` (no Unit dir). Verified green: 49 tests / 176 assertions.
+- `phpunit.xml` declares ONE suite: `tests/Feature` (no Unit dir). Verified green: 56 tests / 193 assertions.
 - `tests/TestCase.php` is Testbench with sqlite `:memory:` and the package provider. `phpunit.xml` sets `WHATSAPP_API_TOKEN` / `WHATSAPP_API_PHONE_NUMBER_ID` to empty.
 - Fixtures: `stubs/messageText.stub.json` (webhook payload used by tests) and `stubs/HasAttributes.stub` — the stub is loaded ONLY by PHPStan (`phpstan.neon`) and must not be deleted.
 - `openspec/config.yaml`'s test baseline (5 tests / 1 known error in `WappifyTest::testCast`) is STALE: the legacy surface and that test were removed; the whole suite passes now.

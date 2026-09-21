@@ -16,7 +16,7 @@
     "require": {
         "php": "^8.2",
         "netflie/whatsapp-cloud-api": "^2.0",
-        "spatie/laravel-medialibrary": "^11|^12",
+        "spatie/laravel-medialibrary": "^11.23|^12",
         "tightenco/parental": "^1.6",
         "spatie/laravel-model-states": "~2.12,<2.14.2"
     },
