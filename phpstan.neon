@@ -12,7 +12,7 @@ parameters:
 
     level: max
 
-    phpVersion: 80100
+    phpVersion: 80200
 
     tmpDir: .phpstan-cache
 

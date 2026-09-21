@@ -4,6 +4,18 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+### Security
+
+- Cleared the Dependabot `laravel/framework` advisories. `laravel/framework` is now pinned to `^12.61.1` in `require-dev`, which is the first 12.x release that carries the fixes for CVE-2026-48019 (CRLF injection in the default email rule, fixed in 12.60.0) and GHSA-crmm-hgp2-wgrp (temporary signed-URL path confusion, fixed in 12.61.1). No advisory affects a shipped runtime dependency: the vulnerable package was only ever a `require-dev` test dependency.
+
+### Changed
+
+- Dev/test toolchain upgraded: PHP floor `^8.1` → `^8.2`, `orchestra/testbench` `^8.0|^9.0` → `^10.0`, `laravel/framework` `^10.0|^11.7` → `^12.61.1`, `phpunit/phpunit` → `^11.5.50`, `larastan/larastan` added for Laravel-aware static analysis, and `spatie/laravel-medialibrary` widened to `^11|^12`. The suite stays green on Laravel 12 (47 tests / 172 assertions). (Breaking for contributors only: the test matrix no longer covers PHP 8.1 or Laravel 10/11, neither of which has a release fixing the advisories.)
+- `src/Models/Whatsapp.php` declares its cast map through the `casts()` method instead of the `$casts` property, so typed children can extend it via `parent::casts()`. The old property only existed to support Laravel 10.
+- PHPStan analyses at `phpVersion: 80200` (was `80100`).
+- `composer test` runs `phpunit` instead of the Windows-only `.\vendor\bin\phpunit` path, which exited 127 on Linux. `vendor/bin/phpunit` remains the canonical direct command.
+- Removed the `policy.advisories.block false` override from `composer.json` and the CI install steps. It only existed to resolve past the Laravel 10/11 advisories, so Composer's secure default (block on advisory) is restored.
+
 ### Added
 
 - HMAC-SHA256 verification of Meta webhook deliveries (`X-Hub-Signature-256` over the raw body, `hash_equals`) against a per-account `app_secret`. Forged or missing signatures get `401` with zero dispatches; unknown accounts fail closed with `404`.
