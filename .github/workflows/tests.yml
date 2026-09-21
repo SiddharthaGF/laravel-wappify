@@ -33,12 +33,7 @@ jobs:
             ${{ runner.os }}-php-quality-composer-
 
       - name: Install dependencies
-        run: |
-          # CI resolves broad dependency ranges (incl. lowest floor on 8.1).
-          # Laravel 10/11 carry published PKSA advisories, so disable the
-          # advisory block that would reject the whole range on update.
-          composer config policy.advisories.block false
-          composer update --prefer-dist --no-interaction --no-progress
+        run: composer update --prefer-dist --no-interaction --no-progress
 
       - name: Check code style
         run: composer pint
@@ -53,12 +48,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: '8.1'
+          - php: '8.2'
             label: lowest
             dependency-versions: '--prefer-lowest --prefer-stable'
-          - php: '8.1'
-            label: current
-            dependency-versions: ''
           - php: '8.2'
             label: current
             dependency-versions: ''
@@ -92,12 +84,7 @@ jobs:
             ${{ runner.os }}-php-${{ matrix.php }}-${{ matrix.label }}-composer-
 
       - name: Install dependencies
-        run: |
-          # CI resolves broad dependency ranges (incl. lowest floor on 8.1).
-          # Laravel 10/11 carry published PKSA advisories, so disable the
-          # advisory block that would reject the whole range on update.
-          composer config policy.advisories.block false
-          composer update --prefer-dist --no-interaction --no-progress ${{ matrix.dependency-versions }}
+        run: composer update --prefer-dist --no-interaction --no-progress ${{ matrix.dependency-versions }}
 
       - name: Run test suite
         run: vendor/bin/phpunit

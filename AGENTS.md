@@ -1,15 +1,15 @@
 # AGENTS.md
 
-Laravel **package** (`ailuracode/wappify`), not an app: no `.env`, no `artisan serve`, no host app. Tests run under Orchestra Testbench with sqlite `:memory:`. Namespace `AiluraCode\Wappify\` → `src/` (PSR-4), tests → `AiluraCode\Wappify\Tests\`. Default branch is `master`; CI runs on push + PRs.
+Laravel **package** (`ailuracode/wappify`), not an app: no `.env`, no `artisan serve`, no host app. Tests run under Orchestra Testbench with sqlite `:memory:`. Namespace `AiluraCode\Wappify\` → `src/` (PSR-4), tests → `AiluraCode\Wappify\Tests\`. Default branch is `master`; CI runs on push + PRs. **Dev/test floor is PHP 8.2 / Laravel 12 / orchestra/testbench 10** — `laravel/framework` is pinned to `^12.61.1` because every earlier release is covered by the CRLF-injection and signed-URL advisories.
 
 ## Commands (verified on Linux)
 
-- **`vendor/bin/phpunit` is the only working test command.** `composer test` is broken on Linux — its script uses a Windows path (`.\vendor\bin\phpunit`) and exits 127.
+- **`vendor/bin/phpunit` is the canonical test command** (`composer test` now runs `phpunit`, but the bare direct path is unambiguous).
 - Style: `vendor/bin/pint --test` (or `composer pint`); auto-fix with `composer pint:fix`. Pint is the ONLY formatter installed — the `phpcs`/`php-cs-fixer` commands in `openspec/config.yaml` are stale and do not exist in `vendor/bin`.
 - Static analysis: `composer phpstan` runs both configs (max level): `phpstan.neon` over `src/`, `config/`, `database/`, `routes/`, plus `phpstan-tests.neon` over `tests/`.
 - `vendor/bin/rector process --dry-run` for refactor preview. `rector.php` deliberately skips `LocallyCalledStaticMethodToNonStaticRector` (helpers stay static) and the `ThrowIfRector`s (explicit throws) — do not reintroduce those changes.
 - No xdebug/pcov installed → no coverage output available.
-- Before a local `composer update`: `composer config policy.advisories.block false` (CI does this; the Laravel 10/11 ranges carry published advisories that otherwise block resolution).
+- `composer audit` is clean: `laravel/framework` is pinned to a patched line, so a local `composer update` needs no advisory workaround. Do not re-add `policy.advisories.block false` — if an update is blocked by an advisory, fix the constraint instead.
 
 ## Architecture rules (easy to violate)
 
@@ -24,7 +24,7 @@ Laravel **package** (`ailuracode/wappify`), not an app: no `.env`, no `artisan s
 
 ## Testing
 
-- `phpunit.xml` declares ONE suite: `tests/Feature` (no Unit dir). Verified green: 47 tests / 172 assertions.
+- `phpunit.xml` declares ONE suite: `tests/Feature` (no Unit dir). Verified green: 56 tests / 193 assertions.
 - `tests/TestCase.php` is Testbench with sqlite `:memory:` and the package provider. `phpunit.xml` sets `WHATSAPP_API_TOKEN` / `WHATSAPP_API_PHONE_NUMBER_ID` to empty.
 - Fixtures: `stubs/messageText.stub.json` (webhook payload used by tests) and `stubs/HasAttributes.stub` — the stub is loaded ONLY by PHPStan (`phpstan.neon`) and must not be deleted.
 - `openspec/config.yaml`'s test baseline (5 tests / 1 known error in `WappifyTest::testCast`) is STALE: the legacy surface and that test were removed; the whole suite passes now.

@@ -50,7 +50,7 @@ use stdClass;
  * @method static Builder<static>                   chat(string $from)
  * @method static Builder<static>|Whatsapp          childrenWith(array<int|string, mixed> $relations)
  * @method static Builder<static>|Whatsapp          childrenWithCount(array<int|string, mixed> $relations)
- * @method static Builder<static>|Whatsapp          findByFrom(string $from)
+ * @method static Builder<static>                   findByFrom(string $from)
  * @method static Builder<static>|Whatsapp          findByWamid(string $wamid)
  * @method static Builder<static>|Whatsapp          lastMessage()
  * @method static Builder<static>|Whatsapp          lastTextMessage()
@@ -83,19 +83,6 @@ class Whatsapp extends Model implements HasMedia, ShouldMessage
     use IsValidable;
 
     public $timestamps = false;
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * Declared as a property instead of the `casts()` method: the method hook
-     * only exists in Laravel 11, while the property form is honored by both
-     * Laravel 10 and 11 (the 8.1 floor resolves to Laravel 10).
-     */
-    protected $casts = [
-        'message' => 'object',
-        'type' => CastsMessageType::class,
-        'state' => MessageState::class,
-    ];
 
     /** @var array<int, string> */
     protected $fillable = [
@@ -252,5 +239,22 @@ class Whatsapp extends Model implements HasMedia, ShouldMessage
         if ($deleteOriginal) {
             $this->getMedia()->each(fn ($media) => $media->delete());
         }
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * Declared as the `casts()` method so child models can extend the map via
+     * `parent::casts()`; the property form cannot be merged that way.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'message' => 'object',
+            'type' => CastsMessageType::class,
+            'state' => MessageState::class,
+        ];
     }
 }
